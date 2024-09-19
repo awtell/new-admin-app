@@ -1,0 +1,87 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* Start off-screen */
+    width: 250px;
+    height: 100%;
+    background-color: #00bcd4; /* Ensure the whole sidebar has the same color */
+    color: white;
+    transition: left 0.3s ease;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.open {
+    left: 0; /* Slide into view */
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #00bcd4; /* Match with the rest of the sidebar */
+    font-size: 18px;
+}
+
+.user-avatar {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background-color: #ff5722;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.username {
+    flex-grow: 1;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    flex-grow: 1;
+}
+
+.sidebar-nav ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.sidebar-nav li {
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-nav li:hover {
+    background-color: #0288d1; /* Slight variation on hover */
+}
+
+.sub-menu {
+    padding-left: 20px;
+}
+
+.sub-menu li {
+    font-size: 14px;
+}
+
+.chevron-icon {
+    float: right;
+}

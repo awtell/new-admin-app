@@ -1,0 +1,69 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.app {
+    position: relative;
+    overflow-y: auto;
+}
+
+.app.no-scroll {
+    overflow: hidden;
+    /* Prevents scrolling when sidebar is open */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+    z-index: 999;
+    /* Should be higher than content but lower than sidebar */
+    cursor: pointer;
+}
+
+.content {
+    padding: 20px;
+    /* Other styles for the content */
+}
+
+/* Sidebar should have a higher z-index than the overlay */
+.sidebar {
+    z-index: 1000;
+}
+
+.app {
+    position: relative;
+    overflow: auto;
+}
+
+.app.no-scroll {
+    overflow: hidden;
+    /* Prevents scrolling when sidebar is open */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+    z-index: 999;
+    /* Should be higher than content but lower than sidebar */
+    cursor: pointer;
+}
+
+.content {
+    padding: 20px;
+    /* Other styles for the content */
+}
+
+/* Sidebar should have a higher z-index than the overlay */
+.sidebar {
+    z-index: 1000;
+}

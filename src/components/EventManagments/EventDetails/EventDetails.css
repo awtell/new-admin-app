@@ -1,0 +1,141 @@
+html,
+body {
+    height: 100%;
+    overflow: auto;
+}
+
+.event-details-container {
+    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.event-details-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.event-section {
+    flex: 1;
+    margin: 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.event-image {
+    width: 100%;
+    max-width: 200px;
+    height: 150px;
+    background-color: #e1e8ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.sponsor-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sponsor-images img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.speaker-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.new-speaker-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.selected-speaker img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.speaker-list li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.speaker-list img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.btn {
+    margin-top: 20px;
+    align-self: center;
+}
+
+@media (max-width: 768px) {
+    .event-details-container {
+        flex-direction: column;
+    }
+
+    .event-section {
+        margin: 10px 0;
+    }
+
+    .btn {
+        align-self: center;
+    }
+}
+
+/* Add styles for inputs and textareas to match the dates format */
+input[type="text"],
+input[type="date"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: none;
+    height: 100px; /* Adjust the height as needed */
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #5b9bd5;
+    box-shadow: 0 0 8px rgba(91, 155, 213, 0.5);
+}

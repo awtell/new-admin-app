@@ -1,0 +1,95 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #00bcd4;
+    color: white;
+    height: 60px;
+    position: relative;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.menu-button {
+    background-color: #ff5722;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-center {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-logo {
+    height: 40px;
+    width: auto;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.user-avatar {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    background-color: #ff5722;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.dropdown {
+    position: absolute;
+    top: 50px; /* Adjust to position below the avatar */
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 120px; /* Ensure enough space for the text */
+}
+
+.logout-button {
+    background: none;
+    border: none;
+    color: #00bcd4;
+    font-size: 16px;
+    padding: 10px 15px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #f5f5f5;
+}
+
+.logout-button .fa-sign-out-alt {
+    margin-right: 8px;
+}

@@ -1,0 +1,172 @@
+
+
+.min-h-screen {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.max-h-80vh {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.py-10 {
+    padding-top: 40px;
+    padding-bottom: 0;
+}
+
+.px-4 {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.text-4xl {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #111827;
+    margin: 24px 0;
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-gray-700 {
+    color: #374151;
+}
+
+.mb-2 {
+    margin-bottom: 8px;
+}
+
+.bg-gray-200 {
+    background-color: #e5e7eb;
+}
+
+.text-gray-900 {
+    color: #111827;
+}
+
+.rounded-xl {
+    border-radius: 12px;
+}
+
+.p-4 {
+    padding: 16px;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+}
+
+input[type="time"] {
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #e5e7eb;
+    width: 100%;
+    font-size: 16px;
+    color: #111827;
+    border: none;
+}
+
+label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.availability-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+}
+
+.chip {
+    padding: 10px 20px;
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    flex: 1;
+}
+
+.chip-selected {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.time-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+
+.time-input {
+    width: 100%;
+    padding: 10px;
+    background-color: #e5e7eb;
+    border-radius: 12px;
+    color: #111827;
+    font-size: 16px;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .py-10 {
+        padding-top: 0;
+        padding-bottom: 20px;
+    }
+
+    .form-container {
+        flex-direction: column;
+        padding: 0;
+    }
+
+    .flex {
+        flex-direction: column;
+    }
+
+    .w-full {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
