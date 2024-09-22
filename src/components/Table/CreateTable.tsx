@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import './CreateTable.css';
+import './CreateTable.css';
 import LoadingAnimation from '../Loading/LoadingAnimation';
+
 
 const CreateTable: React.FC = () => {
   const [tableData, setTableData] = useState({
@@ -12,7 +13,7 @@ const CreateTable: React.FC = () => {
     startTime: '',
     endTime: ''
   });
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

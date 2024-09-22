@@ -33,6 +33,11 @@ const Sidebar: React.FC<SidebarProps> = ({ username, userInitials, isOpen, toggl
         toggleSidebar();
     }
 
+    const handleTestimonialsClick = () => {
+        navigate('/testimonials');
+        toggleSidebar();
+    }
+
     return (
         <div className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
@@ -48,6 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, userInitials, isOpen, toggl
                     <li onClick={handleEventClick}>Event Managements</li>
                     <li onClick={handleTableClick}>Tables</li>
                     <li onClick={handleOrdersClick}>Orders</li>
+                    <li onClick={handleTestimonialsClick}>Testimonials</li>
                 </ul>
             </nav>
         </div>
