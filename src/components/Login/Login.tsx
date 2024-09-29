@@ -5,12 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'; // Import eye icons for show/hide password
 import LoadingAnimation from '../Loading/LoadingAnimation';
 import logo from '../../assets/images/log.png';
+import LoginService from '../../services/LoginService';
 
 interface LoginProps {
-    onLogin: () => void;
+    onLoginSuccess: (token: string) => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -22,21 +23,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
     const togglePasswordVisibility = () => setShowPassword(!showPassword); // Toggle visibility
 
-    const validateEmail = (email: string) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-    };
+    // const validateEmail = (email: string) => {
+    //     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //     return re.test(String(email).toLowerCase());
+    // };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!validateEmail(email)) {
-            setError("Invalid email format");
+        setLoading(true);
+
+        // Collect form data
+        const data = new FormData(event.currentTarget);
+        const UserName = data.get('UserName') as string | null;  // Change 'email' to 'UserName'
+        const Password = data.get('Password') as string | null;  // Change 'password' to 'Password'
+
+        if (!UserName || !Password) {
+            setError("Please enter both username and password.");
+            setLoading(false);
             return;
         }
-        setLoading(true);
+
         try {
+            // Pass UserName and Password to the service
+            const response = await LoginService.authenticate({ UserName, Password });
             setTimeout(() => {
-                onLogin();
+                const { access_token } = response.data;
+                onLoginSuccess(access_token);
                 navigate('/analytics');
                 setLoading(false);
             }, 2000);
@@ -46,6 +58,30 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             setLoading(false);
         }
     };
+
+    // const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    //     event.preventDefault();
+    //     const data = new FormData(event.currentTarget);
+    //     const email = data.get('name') as string | null;
+    //     const password = data.get('password') as string | null;
+    //     console.log(email);
+    //     try {
+    //         const response = await LoginService.authenticate({ email, password });
+    //         if (response?.data?.access_token) {
+    //             const { access_token } = response.data;
+    //             setLocalStorageUser(response.data); // Save user details in local storage
+    //             localStorage.setItem('token', access_token);
+    //             onLoginSuccess(access_token); // Callback after successful login
+    //             navigate('/project'); // Redirect after successful login
+    //         } else {
+    //             // alert("Wrong Email/Password");
+    //             return;
+    //         }
+    //     } catch (error) {
+    //         console.error('Authentication failed', error);
+    //         // alert("Login failed. Please try again later.");
+    //     }
+    // };
 
     const isFormValid = () => {
         return email.length > 0 && password.length > 0;
@@ -57,8 +93,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <img src={logo} alt="Logo" className="logo" />
                 {error && <p className="error-message">{error}</p>}
                 <input
-                    id='email'
-                    type="email"
+                    id='UserName'
+                    name='UserName'
                     placeholder="Enter your Email"
                     value={email}
                     onChange={handleEmailChange}
@@ -66,8 +102,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 />
                 <div className="password-container">
                     <input
-                        id='password'
-                        type={showPassword ? "text" : "password"} // Conditionally change the type
+                        id='Password'
+                        name='Password'
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         value={password}
                         onChange={handlePasswordChange}
@@ -94,3 +131,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 };
 
 export default Login;
+function setLocalStorageUser(data: any) {
+    throw new Error('Function not implemented.');
+}
+

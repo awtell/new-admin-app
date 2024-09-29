@@ -68,7 +68,7 @@ const App: React.FC = () => {
           </>
         ) : (
           <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
