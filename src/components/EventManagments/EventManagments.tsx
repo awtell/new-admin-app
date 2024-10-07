@@ -1,112 +1,103 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingAnimation from '../Loading/LoadingAnimation';
 import './EventManagments.css';
+import EventService from '../../services/EventService';
+
+interface Events {
+    IdEvent: number,
+    EventName: string,
+    Location: string,
+    StartDate: Date,
+    EndDate: Date,
+    EventDescription: string,
+    EventOverview: string,
+}
 
 const EventManagments: React.FC = () => {
     const navigate = useNavigate();
-    const [events, setEvents] = useState([
-        {
-            id: 1,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Data Science Summit',
-            location: 'San Francisco, CA',
-            startDate: '2024-09-10',
-            endDate: '2024-09-12'
-        },
-        {
-            id: 2,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'UX Design Conference',
-            location: 'New York, NY',
-            startDate: '2024-10-05',
-            endDate: '2024-10-07'
-        },
-        {
-            id: 3,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Product Management Forum',
-            location: 'London, UK',
-            startDate: '2024-11-01',
-            endDate: '2024-11-03'
-        },
-        {
-            id: 4,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Software Engineering Symposium',
-            location: 'Austin, TX',
-            startDate: '2024-09-15',
-            endDate: '2024-09-17'
-        },
-        {
-            id: 5,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Blockchain Innovators Expo',
-            location: 'Miami, FL',
-            startDate: '2024-12-01',
-            endDate: '2024-12-03'
-        }
-    ]);
-
+    const [events, setEvents] = useState<Events[]>([]);
+    const [message, setMessage] = useState<string | null>(null);
     const [newEvent, setNewEvent] = useState({
-        id: 0,
-        image: 'https://via.placeholder.com/200x120',
-        title: '',
-        location: '',
-        startDate: '',
-        endDate: ''
+        EventName: '',
+        Location: '',
+        StartDate: '',
+        EndDate: '',
+        EventDescription: '',
+        EventOverview: '',
     });
-
     const [showForm, setShowForm] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setNewEvent({ ...newEvent, [name]: value });
     };
 
-    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    useEffect(() => {
+        document.title = 'Events';
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const response = await EventService.getEvents();
+                setEvents(response.data.My_Result);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+    useEffect(() => {
+        if (!showForm) {
+            setNewEvent({
+                EventName: '',
+                Location: '',
+                StartDate: '',
+                EndDate: '',
+                EventDescription: '',
+                EventOverview: '',
+            });
+        }
+    }, [showForm]);
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newEvent.startDate > newEvent.endDate) {
+        setLoading(true);
+        try {
+            const response = await EventService.createEvent(newEvent);
+            if (response.status === 200) {
+                setSnackbarOpen(false);
+                setShowForm(false);
+                const eventsResponse = await EventService.getEvents();
+                setEvents(eventsResponse.data.My_Result);
+            } else {
+                setMessage('Failed to create event');
+                setSnackbarOpen(true);
+            }
+        } catch (error) {
+            console.error("Error creating event:", error);
+            setMessage('Error creating event');
             setSnackbarOpen(true);
-            setNewEvent({ ...newEvent, startDate: '', endDate: '' }); // Reset dates
-            return;
+        } finally {
+            setLoading(false);
         }
-        const newId = events.length > 0 ? Math.max(...events.map(event => event.id)) + 1 : 1;
-        setEvents([...events, { ...newEvent, id: newId }]);
-        setShowForm(false);
-        setNewEvent({ id: 0, image: 'https://via.placeholder.com/200x120', title: '', location: '', startDate: '', endDate: '' });
-    };
-
-    const handleAddEvent = () => {
-        if (!newEvent.title || !newEvent.location || !newEvent.startDate || !newEvent.endDate) {
-            setSnackbarOpen(true);
-            setNewEvent({ ...newEvent, startDate: '', endDate: '' }); // Reset dates
-            return;
-        }
-        setLoading(true); // Set loading to true
-        const newId = events.length > 0 ? Math.max(...events.map(event => event.id)) + 1 : 1;
-        setEvents([...events, { ...newEvent, id: newId }]);
-        setShowForm(false);
-        setNewEvent({ id: 0, image: 'https://via.placeholder.com/200x120', title: '', location: '', startDate: '', endDate: '' });
-        setLoading(false); // Set loading to false after adding event
     };
 
     const handleCardClick = (event: any) => {
-        navigate(`/event-managments/${event.id}`, { state: { event } });
+        window.location.href = `/event-managments/${event.IdEvent}`;
     };
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value.toLowerCase());
     };
 
-    // Filtering the events based on search term (by title or location)
-    const filteredEvents = events.filter(event =>
-        event.title.toLowerCase().includes(searchTerm) ||
-        event.location.toLowerCase().includes(searchTerm)
-    );
+    const filteredEvents = Array.isArray(events) ? events.filter(event =>
+        event.EventName.toLowerCase().includes(searchTerm) ||
+        event.Location.toLowerCase().includes(searchTerm)
+    ) : [];
 
     return (
         <div className="event-management">
@@ -121,40 +112,57 @@ const EventManagments: React.FC = () => {
                         <button className="modal-close" onClick={() => setShowForm(false)}>X</button>
                         <form className="create-event-form" onSubmit={handleFormSubmit}>
                             <input
+                                id='EventName'
                                 type="text"
-                                name="title"
+                                name="EventName"
                                 placeholder="Event Title"
-                                value={newEvent.title}
+                                value={newEvent.EventName}
                                 onChange={handleInputChange}
                                 required
                             />
                             <input
+                                id='Location'
                                 type="text"
-                                name="location"
+                                name="Location"
                                 placeholder="Event Location"
-                                value={newEvent.location}
+                                value={newEvent.Location}
                                 onChange={handleInputChange}
                                 required
                             />
                             <label>Start Date:</label>
                             <input
+                                id='StartDate'
                                 type="date"
-                                name="startDate"
-                                value={newEvent.startDate}
+                                name="StartDate"
+                                value={newEvent.StartDate}
                                 onChange={handleInputChange}
                                 required
                             />
                             <label>End Date:</label>
                             <input
+                                id='EndDate'
                                 type="date"
-                                name="endDate"
-                                value={newEvent.endDate}
+                                name="EndDate"
+                                value={newEvent.EndDate}
                                 onChange={handleInputChange}
                                 required
                             />
+                            <textarea
+                                id='EventDescription'
+                                name="EventDescription"
+                                placeholder="Event Description"
+                                value={newEvent.EventDescription}
+                                onChange={handleInputChange}
+                                required />
+                            <textarea
+                                id='EventOverview'
+                                name="EventOverview"
+                                placeholder="Event Overview"
+                                value={newEvent.EventOverview}
+                                onChange={handleInputChange}
+                                required />
 
-
-                            <button onClick={handleAddEvent} disabled={loading} className="add-event-button">
+                            <button type="submit" disabled={loading} className="add-event-button">
                                 {loading ? <LoadingAnimation /> : 'Add Event'}
                             </button>
                         </form>
@@ -173,23 +181,20 @@ const EventManagments: React.FC = () => {
 
             <div className="events-grid">
                 {filteredEvents.map(event => (
-                    <div key={event.id} className="event-card" onClick={() => handleCardClick(event)}>
-                        <img src={event.image} alt={event.title} />
-                        <h3>{event.title}</h3>
-                        <p>{event.location}</p>
-                        <p>Start Date: {event.startDate}</p>
-                        <p>End Date: {event.endDate}</p>
+                    <div key={event.IdEvent} className="event-card" onClick={() => handleCardClick(event)}>
+                        <h3>{event.EventName}</h3>
+                        <p>{event.Location}</p>
+                        <p>Start Date: {new Date(event.StartDate).toDateString()}</p>
+                        <p>End Date: {new Date(event.EndDate).toDateString()}</p>
                     </div>
                 ))}
             </div>
 
             {snackbarOpen && (
                 <div className="snackbar">
-                    <p>Error: Start date cannot be later than end date.</p>
-                    <button onClick={() => setSnackbarOpen(false)}>Close</button>
+                    <p>{message || 'Error: Start date cannot be later than end date.'}</p>
                 </div>
             )}
-
         </div>
     );
 };

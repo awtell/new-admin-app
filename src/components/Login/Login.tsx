@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Login.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'; // Import eye icons for show/hide password
 import LoadingAnimation from '../Loading/LoadingAnimation';
 import logo from '../../assets/images/log.png';
-import LoginService from '../../services/LoginService';
+import AuthService from '../../services/AuthService';
 
 interface LoginProps {
     onLoginSuccess: (token: string) => void;
@@ -17,6 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState<boolean>(false); // State to toggle password visibility
+
     const navigate = useNavigate();
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
@@ -28,14 +29,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     //     return re.test(String(email).toLowerCase());
     // };
 
+
+    useEffect(() => {
+        document.title = 'Login';
+    }, []);
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setLoading(true);
 
-        // Collect form data
         const data = new FormData(event.currentTarget);
-        const UserName = data.get('UserName') as string | null;  // Change 'email' to 'UserName'
-        const Password = data.get('Password') as string | null;  // Change 'password' to 'Password'
+        const UserName = data.get('UserName') as string | null;
+        const Password = data.get('Password') as string | null;
 
         if (!UserName || !Password) {
             setError("Please enter both username and password.");
@@ -44,14 +49,15 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         }
 
         try {
-            // Pass UserName and Password to the service
-            const response = await LoginService.authenticate({ UserName, Password });
+            const response = await AuthService.authenticate({ UserName, Password });
             setTimeout(() => {
-                const { access_token } = response.data;
-                onLoginSuccess(access_token);
+                const token = response.data.My_Result.JWT_Token;
+                localStorage.setItem('JWT_Token', token);
+                onLoginSuccess(token);
+                console.log(token)
                 navigate('/analytics');
                 setLoading(false);
-            }, 2000);
+            }, 20);
         } catch (error) {
             setError('Error logging in, please try again later');
             console.error('Error logging in:', error);
@@ -59,29 +65,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         }
     };
 
-    // const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    //     event.preventDefault();
-    //     const data = new FormData(event.currentTarget);
-    //     const email = data.get('name') as string | null;
-    //     const password = data.get('password') as string | null;
-    //     console.log(email);
-    //     try {
-    //         const response = await LoginService.authenticate({ email, password });
-    //         if (response?.data?.access_token) {
-    //             const { access_token } = response.data;
-    //             setLocalStorageUser(response.data); // Save user details in local storage
-    //             localStorage.setItem('token', access_token);
-    //             onLoginSuccess(access_token); // Callback after successful login
-    //             navigate('/project'); // Redirect after successful login
-    //         } else {
-    //             // alert("Wrong Email/Password");
-    //             return;
-    //         }
-    //     } catch (error) {
-    //         console.error('Authentication failed', error);
-    //         // alert("Login failed. Please try again later.");
-    //     }
-    // };
 
     const isFormValid = () => {
         return email.length > 0 && password.length > 0;
@@ -131,7 +114,4 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 };
 
 export default Login;
-function setLocalStorageUser(data: any) {
-    throw new Error('Function not implemented.');
-}
 
