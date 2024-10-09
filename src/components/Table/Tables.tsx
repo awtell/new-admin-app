@@ -1,89 +1,68 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Tables.css';
+import { TableService } from '../../services/TableService';
+import LoadingAnimation from '../Loading/LoadingAnimation';
 
-const Tables: React.FC = () => {
+const Tables = () => {
     const navigate = useNavigate();
-    const [tables] = useState([
-        {
-            id: 1,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Table 1',
-            location: 'Room 1',
-            price: '$100',
-            capacity: 4,
-            costPerChair: 25,
-            availability: 'Available',
-            startTime: '09:00 AM',
-            endTime: '05:00 PM'
-        },
-        {
-            id: 2,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Table 2',
-            location: 'Room 2',
-            price: '$200',
-            capacity: 6,
-            costPerChair: 33.33,
-            availability: 'Unavailable',
-            startTime: '10:00 AM',
-            endTime: '06:00 PM'
-        },
-        {
-            id: 3,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Table 3',
-            location: 'Room 3',
-            price: '$300',
-            capacity: 8,
-            costPerChair: 37.5,
-            availability: 'Available',
-            startTime: '11:00 AM',
-            endTime: '07:00 PM'
-        },
-        {
-            id: 4,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Table 4',
-            location: 'Room 4',
-            price: '$400',
-            capacity: 10,
-            costPerChair: 40,
-            availability: 'Available',
-            startTime: '08:00 AM',
-            endTime: '04:00 PM'
-        },
-        {
-            id: 5,
-            image: 'https://via.placeholder.com/200x120',
-            title: 'Table 5',
-            location: 'Room 5',
-            price: '$500',
-            capacity: 12,
-            costPerChair: 41.67,
-            availability: 'Unavailable',
-            startTime: '07:00 AM',
-            endTime: '03:00 PM'
-        }
-    ]);
+    interface Table {
+        IdEventTable: number,
+        IdAdmin: number,
+        IdEvent: number,
+        TableName: string,
+        Capacity: number,
+        CostPerChair: number,
+        Availability: number,
+        StartTime: Date,
+        EndTime: Date,
+        Attachment: any,
+        SaveName: string,
+        DateCreated: Date,
+        Deleted: boolean,
+        DateDeleted: Date,
+        TableImage: any
+    }
 
-    const [searchTerm, setSearchTerm] = useState(''); // State for storing search term
+    const [tables, setTables] = useState<Table[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Function to handle search input changes
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
 
-    // Filter the tables based on the search term
-    const filteredTables = tables.filter(table =>
-        table.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        table.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        table.availability.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     const handleCardClick = (table: any) => {
-        
+
     };
+
+    useEffect(() => {
+        const fetchTables = async () => {
+            // Fetch tables from the server
+            try {
+                const response = await TableService.getTables();
+                const data = await response.data.My_Result;
+                const formattedData = data.map((table: any) => ({
+                    ...table,
+                    StartTime: new Date(table.StartTime),
+                    EndTime: new Date(table.EndTime)
+                }));
+                setTables(formattedData);
+            } catch (error) {
+                console.error('Error fetching tables:', error);
+            }
+        }
+        fetchTables();
+    }, []);
+
+
+    const filteredTables = tables.filter(table =>
+        table.TableName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        table.Availability.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
 
     return (
         <div className="event-management">
@@ -104,20 +83,19 @@ const Tables: React.FC = () => {
             <div className="events-grid">
                 {filteredTables.length > 0 ? (
                     filteredTables.map(table => (
-                        <div key={table.id} className="event-card" onClick={() => handleCardClick(table)}>
-                            <img src={table.image} alt={table.title} />
-                            <h3>{table.title}</h3>
-                            <p>{table.location}</p>
-                            <p>{table.price}</p>
-                            <p>Capacity: {table.capacity}</p>
-                            <p>Cost per chair: ${table.costPerChair}</p>
-                            <p>Availability: {table.availability}</p>
-                            <p>Start Time: {table.startTime}</p>
-                            <p>End Time: {table.endTime}</p>
+                        <div key={table.IdEventTable} className="event-card" onClick={() => handleCardClick(table)}>
+                            <h3>{table.TableName}</h3>
+
+                            <p>Capacity: {table.Capacity}</p>
+                            <p>Cost per chair: ${table.CostPerChair}</p>
+                            <p>Availability: {table.Availability}</p>
+                            <p>Start Time: {table.StartTime.toString()}</p>
+                            <p>End Time: {table.EndTime.toString()}</p>
+
                         </div>
                     ))
                 ) : (
-                    <p>No tables found.</p>
+                    <LoadingAnimation />
                 )}
             </div>
         </div>

@@ -1,34 +1,41 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import './CreateTable.css';
 import LoadingAnimation from '../Loading/LoadingAnimation';
-
+import { TableService } from '../../services/TableService';
+import { useNavigate } from 'react-router-dom';
 
 const CreateTable: React.FC = () => {
-  const [tableData, setTableData] = useState({
-    name: '',
-    capacity: '',
-    costPerChair: '',
-    availability: '',
-    startTime: '',
-    endTime: ''
-  });
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [tableData, setTableData] = useState({
+    IdEvent: 1,
+    TableName: '',
+    Capacity: '',
+    CostPerChair: '',
+    Availability: '',
+    StartTime: '',
+    EndTime: '',
+    Attachment: '',
+  });
+
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setTableData({ ...tableData, [name]: value });
+    setTableData({
+      ...tableData,
+      [name]: name === 'IdEvent' || name === 'Capacity' || name === 'IdAdmin' || name === 'IdEventTable' ? parseInt(value, 10) : value,
+    });
   };
 
   const allFieldsFilled = () => {
     return (
-      tableData.name !== '' &&
-      tableData.capacity !== '' &&
-      tableData.costPerChair !== '' &&
-      tableData.availability !== '' &&
-      tableData.startTime !== '' &&
-      tableData.endTime !== ''
+      tableData.TableName !== '' &&
+      tableData.Capacity !== '' &&
+      tableData.CostPerChair !== '' &&
+      tableData.Availability !== '' &&
+      tableData.StartTime !== '' &&
+      tableData.EndTime !== '' &&
+      tableData.Attachment !== ''
     );
   };
 
@@ -37,14 +44,43 @@ const CreateTable: React.FC = () => {
       return;
     }
 
-    setLoading(true); // Set loading state to true when submission starts
-
-    // Simulate a delay for table creation (e.g., server request)
-    setTimeout(() => {
-      navigate('/tables');
-      setLoading(false); // Set loading state to false after completion
-    }, 2000); // Simulating 2 seconds delay
+    setLoading(true);
+    handleCreateTable().catch((error) => {
+      console.error('Error creating table:', error);
+      setLoading(false);
+    });
   };
+
+  useEffect(() => {
+    document.title = 'Create Table - Event Manager';
+  }, []);
+
+  const handleCreateTable = async () => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append('IdEvent', tableData.IdEvent.toString());
+      formData.append('TableName', tableData.TableName);
+      formData.append('Capacity', tableData.Capacity);
+      formData.append('CostPerChair', tableData.CostPerChair);
+      formData.append('Availability', tableData.Availability);
+      formData.append('StartTime', tableData.StartTime);
+      formData.append('EndTime', tableData.EndTime);
+      const attachmentInput = document.getElementById('Attachment') as HTMLInputElement;
+      if (attachmentInput && attachmentInput.files && attachmentInput.files.length > 0) {
+        formData.append('Attachment', attachmentInput.files[0]);
+      }
+
+      const response = await TableService.insertTable(formData);
+      console.log(response.data);
+      navigate('/tables');
+    } catch (error) {
+      console.error('Error creating table:', error);
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -58,11 +94,12 @@ const CreateTable: React.FC = () => {
               <div>
                 <label>Table name</label>
                 <input
+                  id="TableName"
                   type="text"
-                  name="name"
+                  name="TableName"
                   placeholder="Table Name"
                   className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
-                  value={tableData.name}
+                  value={tableData.TableName}
                   onChange={handleInputChange}
                   required
                 />
@@ -71,23 +108,26 @@ const CreateTable: React.FC = () => {
               <div>
                 <label>Capacity</label>
                 <input
+                  id="Capacity"
                   type="number"
-                  name="capacity"
+                  name="Capacity"
                   className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
-                  value={tableData.capacity}
+                  value={tableData.Capacity}
                   onChange={handleInputChange}
                   min={0}
                   required
+                  style={{ appearance: 'textfield' }}
                 />
               </div>
 
               <div>
                 <label className="block text-base font-medium text-gray-700 mb-2">Cost per chair</label>
                 <input
+                  id="CostPerChair"
                   type="number"
-                  name="costPerChair"
+                  name="CostPerChair"
                   className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
-                  value={tableData.costPerChair}
+                  value={tableData.CostPerChair}
                   onChange={handleInputChange}
                   min={0}
                   required
@@ -101,14 +141,14 @@ const CreateTable: React.FC = () => {
                 <label className="block text-base font-medium text-gray-700 mb-2">Availability</label>
                 <div className="availability-container">
                   <button
-                    className={`chip ${tableData.availability === 'available' ? 'chip-selected' : ''}`}
-                    onClick={() => setTableData({ ...tableData, availability: 'available' })}
+                    className={`chip ${tableData.Availability === 'available' ? 'chip-selected' : ''}`}
+                    onClick={() => setTableData({ ...tableData, Availability: 'available' })}
                   >
                     Available
                   </button>
                   <button
-                    className={`chip ${tableData.availability === 'unavailable' ? 'chip-selected' : ''}`}
-                    onClick={() => setTableData({ ...tableData, availability: 'unavailable' })}
+                    className={`chip ${tableData.Availability === 'unavailable' ? 'chip-selected' : ''}`}
+                    onClick={() => setTableData({ ...tableData, Availability: 'unavailable' })}
                   >
                     Unavailable
                   </button>
@@ -120,10 +160,11 @@ const CreateTable: React.FC = () => {
                   <div className="flex-1">
                     <label className="block text-base font-medium text-gray-700 mb-2">Time starting</label>
                     <input
+                      id="StartTime"
                       type="time"
-                      name="startTime"
+                      name="StartTime"
                       className="time-input"
-                      value={tableData.startTime}
+                      value={tableData.StartTime}
                       onChange={handleInputChange}
                       required
                     />
@@ -132,15 +173,32 @@ const CreateTable: React.FC = () => {
                   <div className="flex-1">
                     <label className="block text-base font-medium text-gray-700 mb-2">Time ending</label>
                     <input
+                      id="EndTime"
                       type="time"
-                      name="endTime"
+                      name="EndTime"
                       className="time-input"
-                      value={tableData.endTime}
+                      value={tableData.EndTime}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
+
                 </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-base font-medium text-gray-700 mb-2">Attachment</label>
+                <input
+                  id="Attachment"
+                  type="file"
+                  name="Attachment"
+                  className="time-input"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setTableData({ ...tableData, Attachment: e.target.files[0].name });
+                    }
+                  }}
+                  required
+                />
               </div>
             </div>
           </div>

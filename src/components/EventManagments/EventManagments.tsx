@@ -180,14 +180,18 @@ const EventManagments: React.FC = () => {
             </div>
 
             <div className="events-grid">
-                {filteredEvents.map(event => (
-                    <div key={event.IdEvent} className="event-card" onClick={() => handleCardClick(event)}>
-                        <h3>{event.EventName}</h3>
-                        <p>{event.Location}</p>
-                        <p>Start Date: {new Date(event.StartDate).toDateString()}</p>
-                        <p>End Date: {new Date(event.EndDate).toDateString()}</p>
-                    </div>
-                ))}
+                {filteredEvents.length > 0 ? (
+                    filteredEvents.map(event => (
+                        <div key={event.IdEvent} className="event-card" onClick={() => handleCardClick(event)}>
+                            <h3>{event.EventName}</h3>
+                            <p>{event.Location}</p>
+                            <p>Start Date: {new Date(event.StartDate).toDateString()}</p>
+                            <p>End Date: {new Date(event.EndDate).toDateString()}</p>
+                        </div>
+                    )))
+                    : (
+                        <LoadingAnimation />
+                    )}
             </div>
 
             {snackbarOpen && (

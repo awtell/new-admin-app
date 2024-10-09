@@ -1,4 +1,3 @@
-
 import axiosInstance from "../axios";
 
 const getEvents = () => {

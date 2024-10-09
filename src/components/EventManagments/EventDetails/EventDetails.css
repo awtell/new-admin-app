@@ -4,6 +4,13 @@ body {
     overflow: auto;
 }
 
+.loading-container{
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+
 .message-bar {
     position: fixed;
     top: 10px;

@@ -1,5 +1,4 @@
-
-
+/* General Styles */
 .min-h-screen {
     min-height: 100vh;
     background-color: #f8fafc;
@@ -9,6 +8,8 @@
 
 .flex {
     display: flex;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 .flex-col {
@@ -83,6 +84,7 @@
 
 .flex-1 {
     flex: 1;
+    max-width: 50%;
 }
 
 input:focus,
@@ -91,7 +93,8 @@ select:focus {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
 }
 
-input[type="time"] {
+input[type="time"],
+.time-input {
     padding: 16px;
     border-radius: 12px;
     background-color: #e5e7eb;
@@ -109,7 +112,8 @@ label {
     margin-bottom: 8px;
 }
 
-.availability-container {
+.availability-container,
+.time-container {
     display: flex;
     justify-content: flex-start;
     gap: 10px;
@@ -132,34 +136,13 @@ label {
     color: white;
 }
 
-.time-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-}
-
-.time-input {
-    width: 100%;
-    padding: 10px;
-    background-color: #e5e7eb;
-    border-radius: 12px;
-    color: #111827;
-    font-size: 16px;
-    border: none;
-}
-
 @media (max-width: 768px) {
     .py-10 {
         padding-top: 0;
         padding-bottom: 20px;
     }
 
-    .form-container {
-        flex-direction: column;
-        padding: 0;
-    }
-
+    .form-container,
     .flex {
         flex-direction: column;
     }
@@ -169,4 +152,24 @@ label {
         padding-left: 0;
         padding-right: 0;
     }
+
+    .flex-1 {
+        max-width: 100%;
+    }
+}
+
+/* Input Number Styles */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Spacing */
+.space-y-6 > * {
+    margin-bottom: 24px;
 }
