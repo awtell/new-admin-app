@@ -13,6 +13,7 @@ import CreateTable from './components/Table/CreateTable';
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import Orders from './components/Orders/Orders';
 import Testimonials from './components/Testimonials/Testimonials';
+import Speakers from './components/Speakers/Speakers';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -63,6 +64,7 @@ const App: React.FC = () => {
               <Route path='/tables-create' element={<CreateTable />} />
               <Route path='/orders' element={<Orders />} />
               <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/speakers" element={<Speakers />} />
               <Route path="*" element={<Navigate to="/analytics" />} />
             </Routes>
           </>

@@ -4,12 +4,15 @@ import { useParams } from 'react-router-dom';
 import EventService from '../../../services/EventService';
 import './EventDetails.css';
 import LoadingAnimation from '../../Loading/LoadingAnimation';
+import { PartnerService } from '../../../services/PartnerService';
+import { SpeakerService } from '../../../services/SpeakerService';
+import ConfirmationModal from '../../ConfirmationModal/ConfiramtionModal';
 
-// Ensure to bind modal to your appElement (root element)
 Modal.setAppElement('#root');
 
 const EventDetails = () => {
     const { id: IdEvent } = useParams<{ id: string }>();
+
     interface Event {
         IdEvent: number;
         EventName: string;
@@ -22,6 +25,25 @@ const EventDetails = () => {
         Attachments: any[];
         DateDeleted: Date;
         SaveName: string;
+    }
+
+    interface Partner {
+        Attachment1: File | null;
+        Attachment2: File | null;
+    }
+
+    interface Speaker {
+        IdEventSpeaker: number;
+        IdEvent: number;
+        IdSpeaker: number;
+        SpeakerName: string;
+        SpeakerTitle: string;
+        Attachment: File | null;
+        SaveName: string | null;
+        DateCreated: Date;
+        Deleted: number;
+        DateDeleted: Date | null;
+        SpeakerImage?: string;
     }
 
     const [event, setEvent] = useState<Event>({
@@ -38,108 +60,195 @@ const EventDetails = () => {
         SaveName: '',
     });
 
-    const [isModifiedEventInfo, setIsModifiedEventInfo] = useState(false);
-    const [isLoading, setIsLoading] = useState(true); // Loading state
-
-    // Speaker states
-    const [speakers, setSpeakers] = useState([
-        { id: 1, name: 'John Doe', title: 'CEO', image: 'https://via.placeholder.com/100' },
-        { id: 2, name: 'Jane Smith', title: 'CTO', image: 'https://via.placeholder.com/100' }
-    ]);
-    const [selectedSpeaker, setSelectedSpeaker] = useState<null | { id: number; name: string; title: string; image: string; }>(null);
-
-    // Modal states for adding a new speaker
+    const [partner, setPartner] = useState<Partner>({ Attachment1: null, Attachment2: null });
+    const [isLoading, setIsLoading] = useState(true);
+    const [speakers, setSpeakers] = useState<Speaker[]>([]);
+    const [selectedSpeakers, setSelectedSpeakers] = useState<Speaker[]>([]);
     const [isNewSpeaker, setIsNewSpeaker] = useState(false);
     const [newSpeakerName, setNewSpeakerName] = useState('');
     const [newSpeakerTitle, setNewSpeakerTitle] = useState('');
-    const [newSpeakerImage, setNewSpeakerImage] = useState('');
+    const [newSpeakerImage, setNewSpeakerImage] = useState<File | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [speakerToDelete, setSpeakerToDelete] = useState<Speaker | null>(null);
+    const [isSavingEventInfo, setIsSavingEventInfo] = useState(false);
+    const [isSavingPartner, setIsSavingPartner] = useState(false);
+    const [isSavingSpeakers, setIsSavingSpeakers] = useState(false);
+    const [isCreatingSpeaker, setIsCreatingSpeaker] = useState(false);
 
-    // Fetch event details
     useEffect(() => {
-        const fetchEventDetails = async () => {
+        const fetchData = async () => {
             try {
-                const response = await EventService.getEventById(Number(IdEvent));
-                const data = response.data.My_Result.Event;
-                setEvent({
-                    ...data,
-                    StartDate: new Date(data.StartDate),
-                    EndDate: new Date(data.EndDate),
-                });
+                const eventResponse = await EventService.getEventById(Number(IdEvent));
+                const eventData = eventResponse.data.My_Result.Event;
+                setEvent({ ...eventData, StartDate: new Date(eventData.StartDate), EndDate: new Date(eventData.EndDate) });
+                const partnerData = eventResponse.data.My_Result.Partners;
+                setPartner({ ...partnerData });
+
+                const speakersResponse = await SpeakerService.getAllSpeakers();
+                setSpeakers(speakersResponse.data.My_Result);
+                const selectedSpeakersData = eventResponse.data.My_Result.Speakers;
+                setSelectedSpeakers(selectedSpeakersData || []);
+                setMessageType('success');
             } catch (error) {
-                console.error('Error fetching event details:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setIsLoading(false);
             }
+
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000);
         };
-        fetchEventDetails();
+        fetchData();
     }, [IdEvent]);
 
-    // Handle input changes for event information
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setEvent(prevEvent => ({
-            ...prevEvent,
-            [name]: value,
-        }));
-        setIsModifiedEventInfo(true);
+        setEvent(prevEvent => ({ ...prevEvent, [name]: value }));
     };
 
-    // Handle saving event info
-    const handleSaveEventInfo = async () => {
+    const handleSaveEventInfo = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSavingEventInfo(true);
         try {
-            const formattedEvent = {
-                ...event,
-                StartDate: event.StartDate.toISOString().split('T')[0],
-                EndDate: event.EndDate.toISOString().split('T')[0],
-            };
+            const formattedEvent = { ...event, StartDate: event.StartDate.toISOString().split('T')[0], EndDate: event.EndDate.toISOString().split('T')[0] };
             await EventService.updateEvent(formattedEvent);
-            setIsModifiedEventInfo(false);
             setMessage('Event info saved successfully!');
             setMessageType('success');
         } catch (error) {
             console.error('Error saving event info:', error);
             setMessage('Error saving event info, please try again later.');
             setMessageType('error');
+        } finally {
+            setIsSavingEventInfo(false);
         }
 
-        setTimeout(() => {
-            setMessage(null);
-            setMessageType(null);
-        }, 3000);
+        setTimeout(() => { setMessage(null); setMessageType(null); }, 3000);
     };
 
-    // Handle speaker selection
+    const handleSavePartner = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSavingPartner(true);
+        try {
+            if (partner.Attachment1 && partner.Attachment2) {
+                const formData = new FormData();
+                formData.append("eventId", IdEvent || '');
+                formData.append("attachment1", partner.Attachment1);
+                formData.append("attachment2", partner.Attachment2);
+
+                const response = await PartnerService.insertPartner(IdEvent || '', partner.Attachment1, partner.Attachment2);
+                if (response && response.status === 200) {
+                    setMessage('Partner added successfully.');
+                    setMessageType('success');
+                }
+            } else {
+                setMessage('Please upload both attachments.');
+                setMessageType('error');
+            }
+        } catch (error) {
+            console.error("Error inserting partner:", error);
+            setMessage('Error adding partner, please try again later.');
+            setMessageType('error');
+        } finally {
+            setIsSavingPartner(false);
+        }
+    };
+
     const handleSpeakerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        if (e.target.value === 'new') {
+        const selectedId = e.target.value;
+        if (selectedId === 'new') {
             setIsNewSpeaker(true);
         } else {
             setIsNewSpeaker(false);
-            const selected = speakers.find(speaker => speaker.id === parseInt(e.target.value)) || null;
-            setSelectedSpeaker(selected);
+            const selected = speakers.find(speaker => speaker.IdSpeaker === Number(selectedId));
             if (selected) {
-                setMessage(`Selected speaker: ${selected.name}`);
-                setMessageType('success');
+                setSelectedSpeakers(prev => [...prev, selected]);
             }
         }
     };
 
-    // Handle adding a new speaker
-    const handleAddNewSpeaker = () => {
-        const newSpeaker = {
-            id: speakers.length + 1,
-            name: newSpeakerName,
-            title: newSpeakerTitle,
-            image: newSpeakerImage,
-        };
-        setSpeakers([...speakers, newSpeaker]);
-        setIsNewSpeaker(false);
-        setNewSpeakerName('');
-        setNewSpeakerTitle('');
-        setNewSpeakerImage('');
-        setMessage('New speaker added successfully!');
-        setMessageType('success');
+    const handleSaveEventSpeaker = async (IdSpeaker: number, IdEvent: number) => {
+        try {
+            const response = await SpeakerService.addEventSpeaker(IdSpeaker, IdEvent);
+            if (response && response.status === 200) {
+                setMessage('Speaker added successfully.');
+                setMessageType('success');
+                const addedSpeaker = speakers.find(speaker => speaker.IdSpeaker === IdSpeaker);
+                if (addedSpeaker) {
+                    setSelectedSpeakers(prev => [...prev, addedSpeaker]);
+                }
+            }
+        } catch (error) {
+            console.error("Error adding speaker to event:", error);
+            setMessage('Error adding speaker. Please try again later.');
+            setMessageType('error');
+        }
+    };
+
+    const handleRemoveSpeaker = (speaker: Speaker) => {
+        if (speaker.IdEventSpeaker) {
+            setSpeakerToDelete(speaker);
+            setIsConfirmationModalOpen(true);
+        } else {
+            setSelectedSpeakers(prev => prev.filter(s => s.IdSpeaker !== speaker.IdSpeaker));
+        }
+    };
+    
+    const confirmRemoveSpeaker = async () => {
+        if (!speakerToDelete) return;
+    
+        try {
+            const response = await SpeakerService.deleteEventSpeaker(speakerToDelete.IdEventSpeaker);
+            if (response && response.status === 200) {
+                setMessage('Speaker removed successfully.');
+                setMessageType('success');
+                setSelectedSpeakers(prev => prev.filter(speaker => speaker.IdEventSpeaker !== speakerToDelete.IdEventSpeaker));
+            }
+        } catch (error) {
+            console.error('Error removing speaker from event:', error);
+            setMessage('Error removing speaker, please try again later.');
+            setMessageType('error');
+        } finally {
+            setIsConfirmationModalOpen(false);
+            setSpeakerToDelete(null);
+        }
+    };
+
+    const handleCreateSpeaker = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsCreatingSpeaker(true);
+        const formData = new FormData();
+        formData.append('IdEvent', event.IdEvent.toString());
+        formData.append('SpeakerName', newSpeakerName);
+        formData.append('SpeakerTitle', newSpeakerTitle);
+
+        if (newSpeakerImage) {
+            formData.append('SpeakerImage', newSpeakerImage);
+        }
+        try {
+            const response = await SpeakerService.addSpeaker(formData);
+            if (response.status === 200) {
+                const newSpeaker = response.data;
+                setSpeakers([...speakers, newSpeaker]);
+                setIsNewSpeaker(false);
+                setMessage('Speaker created successfully!');
+                setMessageType('success');
+                // Refetch data to update the list of speakers
+                const speakersResponse = await SpeakerService.getAllSpeakers();
+                setNewSpeakerName('');
+                setNewSpeakerTitle('');
+                setNewSpeakerImage(null);
+                setSpeakers(speakersResponse.data.My_Result);
+            } else {
+                setMessage('Failed to create speaker.');
+                setMessageType('error');
+            }
+        } catch (error) {
+            setMessage('Error creating speaker.');
+            setMessageType('error');
+        } finally {
+            setIsCreatingSpeaker(false);
+        }
     };
 
     return (
@@ -153,137 +262,122 @@ const EventDetails = () => {
                     {/* Event Information */}
                     <div className="event-section">
                         <h2>Event Information</h2>
-                        <p>Event Name</p>
-                        <input
-                            id="EventName"
-                            type="text"
-                            name="EventName"
-                            value={event?.EventName || ''}
-                            onChange={handleInputChange}
-                        />
-                        <p>Location</p>
-                        <input
-                            id="Location"
-                            type="text"
-                            name="Location"
-                            value={event.Location}
-                            onChange={handleInputChange}
-                        />
-                        <p>Start Date</p>
-                        <input
-                            id="StartDate"
-                            type="date"
-                            name="StartDate"
-                            value={event?.StartDate ? event.StartDate.toISOString().split('T')[0] : ''}
-                            onChange={handleInputChange}
-                        />
-                        <p>End Date</p>
-                        <input
-                            id="EndDate"
-                            type="date"
-                            name="EndDate"
-                            value={event?.EndDate ? event.EndDate.toISOString().split('T')[0] : ''}
-                            onChange={handleInputChange}
-                        />
-                        <p>Description</p>
-                        <textarea
-                            id="EventDescription"
-                            name="EventDescription"
-                            placeholder="Event Description"
-                            value={event?.EventDescription || ''}
-                            onChange={handleInputChange}
-                        ></textarea>
-                        <p>Overview</p>
-                        <textarea
-                            id="EventOverview"
-                            name="EventOverview"
-                            placeholder="Event Overview"
-                            value={event?.EventOverview || ''}
-                            onChange={handleInputChange}
-                        ></textarea>
-                        <button
-                            className="btn btn-primary"
-                            onClick={handleSaveEventInfo}
-                            disabled={!isModifiedEventInfo}
-                        >
-                            Save
-                        </button>
+                        <form onSubmit={handleSaveEventInfo}>
+                            <label>Event Name</label>
+                            <input type="text" name="EventName" value={event.EventName} onChange={handleInputChange} />
+
+                            <label>Location</label>
+                            <input type="text" name="Location" value={event.Location} onChange={handleInputChange} />
+
+                            <label>Start Date</label>
+                            <input type="date" name="StartDate" value={event.StartDate.toISOString().split('T')[0]} onChange={handleInputChange} />
+
+                            <label>End Date</label>
+                            <input type="date" name="EndDate" value={event.EndDate.toISOString().split('T')[0]} onChange={handleInputChange} />
+
+                            <label>Description</label>
+                            <textarea name="EventDescription" value={event.EventDescription} onChange={handleInputChange}></textarea>
+
+                            <label>Overview</label>
+                            <textarea name="EventOverview" value={event.EventOverview} onChange={handleInputChange}></textarea>
+
+                            <button className="btn" type="submit" disabled={isSavingEventInfo}>
+                                {isSavingEventInfo ? <LoadingAnimation /> : 'Save'}
+                            </button>
+                        </form>
                     </div>
 
-                    {/* Sponsors and Partners Section */}
+                    {/* Sponsors and Partners */}
                     <div className="event-section">
                         <h2>Sponsors and Partners</h2>
-                        <input type="file" multiple />
-                        <div className="sponsor-images">
-                            <img src="https://via.placeholder.com/100" alt="Sponsor" />
-                            <img src="https://via.placeholder.com/100" alt="Sponsor" />
-                        </div>
+                        <form onSubmit={handleSavePartner}>
+                            <input type="file" onChange={(e) => {
+                                const files = e.target.files;
+                                if (files && files.length >= 2) {
+                                    setPartner({ Attachment1: files[0], Attachment2: files[1] });
+                                } else {
+                                    setMessage('Please select two files.');
+                                }
+                            }} multiple />
+                            <button type="submit" className="btn" disabled={isSavingPartner}>
+                                {isSavingPartner ? <LoadingAnimation /> : 'Save'}
+                            </button>
+                        </form>
                     </div>
 
                     {/* Speakers Section */}
                     <div className="event-section">
                         <h2>Speakers</h2>
-                        <select onChange={handleSpeakerSelect} value={selectedSpeaker?.id || ''}>
-                            <option value="">Select a Speaker</option>
-                            {speakers.map(speaker => (
-                                <option key={speaker.id} value={speaker.id}>
-                                    {speaker.name} - {speaker.title}
-                                </option>
-                            ))}
+                        <select onChange={handleSpeakerSelect}>
+                            <option value="">Select Speaker</option>
                             <option value="new">Add New Speaker</option>
+                            {speakers
+                                .filter(speaker => !selectedSpeakers.some(s => s.IdSpeaker === speaker.IdSpeaker)) // Exclude assigned speakers
+                                .slice()
+                                .filter(speaker => speaker.SpeakerName) // Ensure SpeakerName is defined
+                                .sort((a, b) => a.SpeakerName.localeCompare(b.SpeakerName))
+                                .map(speaker => (
+                                    <option key={speaker.IdSpeaker} value={speaker.IdSpeaker}>{speaker.SpeakerName}</option>
+                                ))}
                         </select>
-
-                        {isNewSpeaker && (
-                            <Modal
-                                isOpen={isNewSpeaker}
-                                onRequestClose={() => setIsNewSpeaker(false)}
-                                contentLabel="Add New Speaker"
-                            >
-                                <h2>Add New Speaker</h2>
-                                <form onSubmit={(e) => { e.preventDefault(); handleAddNewSpeaker(); }}>
-                                    <label>
-                                        Name:
-                                        <input
-                                            type="text"
-                                            value={newSpeakerName}
-                                            onChange={(e) => setNewSpeakerName(e.target.value)}
-                                        />
-                                    </label>
-                                    <label>
-                                        Title:
-                                        <input
-                                            type="text"
-                                            value={newSpeakerTitle}
-                                            onChange={(e) => setNewSpeakerTitle(e.target.value)}
-                                        />
-                                    </label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files.length > 0) {
-                                                setNewSpeakerImage(URL.createObjectURL(e.target.files[0]));
-                                            }
-                                        }}
-                                    />
-                                    <button type="submit">Add Speaker</button>
-                                    <button type="button" onClick={() => setIsNewSpeaker(false)}>Cancel</button>
-                                </form>
-                            </Modal>
+                        <div className="speakers-list" style={{ textAlign: 'center' }}>
+                            {selectedSpeakers.map(speaker => (
+                                <div key={speaker.IdSpeaker} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
+                                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                                        <img src="https://via.placeholder.com/150" alt={speaker.SpeakerName} style={{ display: 'block', margin: '0 auto' }} />
+                                        <button onClick={() => handleRemoveSpeaker(speaker)} className="remove-speaker-btn">×</button>
+                                    </div>
+                                    <p>  {`${speaker.SpeakerName}`} <br /> {`${speaker.SpeakerTitle}`}</p>
+                                </div>
+                            ))}
+                        </div>
+                        {!isNewSpeaker && selectedSpeakers.length > 0 && (
+                            <button className="btn" onClick={() => selectedSpeakers.forEach(speaker => handleSaveEventSpeaker(speaker.IdSpeaker, event.IdEvent))} disabled={isSavingSpeakers}>
+                                {isSavingSpeakers ? <LoadingAnimation /> : 'Save All Speakers'}
+                            </button>
                         )}
 
-                        {selectedSpeaker && !isNewSpeaker && (
-                            <div className="selected-speaker">
-                                <img src={selectedSpeaker.image} alt={selectedSpeaker.name} />
-                                <p>{selectedSpeaker.name} - {selectedSpeaker.title}</p>
+                        {isNewSpeaker && (
+                            <div className="new-speaker-form">
+                                <form onSubmit={handleCreateSpeaker}>
+                                    <label>Speaker Name</label>
+                                    <input
+                                        type="text"
+                                        value={newSpeakerName}
+                                        onChange={(e) => setNewSpeakerName(e.target.value)}
+                                    />
+                                    <label>Speaker Title</label>
+                                    <input
+                                        type="text"
+                                        value={newSpeakerTitle}
+                                        onChange={(e) => setNewSpeakerTitle(e.target.value)}
+                                    />
+                                    <label>Speaker Image</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => setNewSpeakerImage(e.target.files?.[0] || null)}
+                                    />
+                                    <button className="btn" type="submit" disabled={isCreatingSpeaker}>
+                                        {isCreatingSpeaker ? <LoadingAnimation /> : 'Create Speaker'}
+                                    </button>
+                                </form>
                             </div>
                         )}
                     </div>
                 </div>
             )}
             {message && (
-                <div className={`message ${messageType}`}>
+                <div className={`message-bar ${messageType}`}>
                     {message}
+                    <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
                 </div>
+            )}
+            {isConfirmationModalOpen && (
+                <ConfirmationModal
+                    message="Are you sure you want to delete this speaker?"
+                    onConfirm={confirmRemoveSpeaker}
+                    onCancel={() => setIsConfirmationModalOpen(false)}
+                />
             )}
         </>
     );

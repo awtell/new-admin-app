@@ -19,6 +19,7 @@ const Testimonials: React.FC = () => {
         TestimonialTitle: '',
         TestimonialDetails: ''
     });
+    const [initialTestimonial, setInitialTestimonial] = useState<Testimonial | null>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -26,14 +27,18 @@ const Testimonials: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
-    // Fetch testimonials when component mounts
+    const [buttonLoading, setButtonLoading] = useState(false);
+
     useEffect(() => {
         const fetchTestimonials = async () => {
+            setLoading(true);
             try {
                 const response = await TestimonialsService.getTestimonials();
                 setTestimonials(response.data.My_Result);
             } catch (error) {
                 console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchTestimonials();
@@ -45,35 +50,33 @@ const Testimonials: React.FC = () => {
     };
 
     const handleAddTestimonial = async () => {
-        setLoading(true);
+        setButtonLoading(true);
         try {
             const response = await TestimonialsService.insertTestimonial(newTestimonial);
             if (response.status === 200) {
                 setMessage('Testimonial added successfully.');
                 setShowForm(false);
+                setTestimonials([...testimonials, newTestimonial]);
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error inserting testimonial:", error);
-
+        } finally {
+            setButtonLoading(false);
         }
-        finally {
-            setLoading(false);
-        }
-
     };
 
     const handleEditTestimonial = (IdTestimonial: number) => {
         const testimonial = testimonials.find(t => t.IdTestimonial === IdTestimonial);
         if (testimonial) {
             setNewTestimonial({ ...testimonial });
+            setInitialTestimonial({ ...testimonial });
             setEditingId(IdTestimonial);
             setShowForm(true);
         }
     };
 
     const handleSaveTestimonial = () => {
-       setLoading(true);
+        setButtonLoading(true);
         TestimonialsService.editTestimonial(newTestimonial)
             .then(() => {
                 const updatedTestimonials = testimonials.map(t => {
@@ -90,24 +93,24 @@ const Testimonials: React.FC = () => {
                 console.error("Error updating testimonial:", error);
             })
             .finally(() => {
-                setLoading(false);
+                setButtonLoading(false);
             });
     };
 
     const handleDeleteTestimonial = (IdTestimonial: number) => {
-            if (IdTestimonial !== undefined) {
-                console.log('IdTestimonial', IdTestimonial);
-                setTestimonialToDelete(IdTestimonial);
-                setShowConfirmation(true);
-            } else {
-                console.error('Error: IdTestimonial is undefined');
-            }
+        if (IdTestimonial !== undefined) {
+            console.log('IdTestimonial', IdTestimonial);
+            setTestimonialToDelete(IdTestimonial);
+            setShowConfirmation(true);
+        } else {
+            console.error('Error: IdTestimonial is undefined');
+        }
     };
 
     const confirmDeleteTestimonial = () => {
         console.log("Deleting testimonial:", testimonialToDelete);
         if (testimonialToDelete) {
-            setLoading(true);
+            setButtonLoading(true);
             TestimonialsService.deleteTestimonial(testimonialToDelete)
                 .then(() => {
                     setTestimonials(testimonials.filter(t => t.IdTestimonial !== testimonialToDelete));
@@ -118,7 +121,7 @@ const Testimonials: React.FC = () => {
                     console.error("Error deleting testimonial:", error);
                 })
                 .finally(() => {
-                    setLoading(false);
+                    setButtonLoading(false);
                 });
         }
     };
@@ -132,6 +135,15 @@ const Testimonials: React.FC = () => {
         setSearchTerm(e.target.value);
     };
 
+    const isFormClean = () => {
+        return !!(
+            initialTestimonial &&
+            newTestimonial.TestimonialName === initialTestimonial.TestimonialName &&
+            newTestimonial.TestimonialTitle === initialTestimonial.TestimonialTitle &&
+            newTestimonial.TestimonialDetails === initialTestimonial.TestimonialDetails
+        );
+    };
+
     const filteredTestimonials = testimonials.filter(testimonial =>
         testimonial.TestimonialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         testimonial.TestimonialTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -140,6 +152,7 @@ const Testimonials: React.FC = () => {
 
     return (
         <div className="testimonial-management">
+            {loading && <LoadingAnimation />}
             <div className="testimonials-header">
                 <h1>Testimonials</h1>
                 <button onClick={() => {
@@ -171,14 +184,17 @@ const Testimonials: React.FC = () => {
                         </div>
                     ))
                 ) : (
-                    <p>No testimonials found.</p>
+                    <>
+                        <LoadingAnimation />
+                        <p>No testimonials found.</p>
+                    </>
                 )}
             </div>
 
             {showForm && (
                 <div className="modal">
                     <div className="modal-content">
-                        <span className="modal-close" onClick={() => setShowForm(false)}>&times;</span>
+                        <span className="testimonial-modal-close" onClick={() => setShowForm(false)}>&times;</span>
                         <input
                             id='TestimonialName'
                             type="text"
@@ -203,9 +219,13 @@ const Testimonials: React.FC = () => {
                             onChange={handleInputChange}
                         />
                         {editingId ? (
-                            <button onClick={handleSaveTestimonial}>Save</button>
+                            <button className="modal-button" onClick={handleSaveTestimonial} disabled={buttonLoading || isFormClean()}>
+                                {buttonLoading ? 'Saving...' : 'Save'}
+                            </button>
                         ) : (
-                            <button onClick={handleAddTestimonial}>Add</button>
+                            <button className="modal-button" onClick={handleAddTestimonial} disabled={buttonLoading}>
+                                {buttonLoading ? 'Adding...' : 'Add'}
+                            </button>
                         )}
                     </div>
                 </div>

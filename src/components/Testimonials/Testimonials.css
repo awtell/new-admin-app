@@ -1,3 +1,5 @@
+/* Testimonials.css */
+
 /* General styling similar to tables */
 .testimonial-management {
     height: 100vh;
@@ -20,11 +22,13 @@
 
 .testimonials-header button {
     padding: 8px 16px;
-    background-color: #e1e8ff;
+    background-color: #e1e8ff !important;
     border: none;
     border-radius: 20px;
     font-size: 14px;
     cursor: pointer;
+    color: #000 !important;
+    /* Ensure text color is set */
 }
 
 .search-bar {
@@ -114,8 +118,8 @@
 
 .testimonial-actions button {
     padding: 8px 16px;
-    background-color: #007bff;
-    color: white;
+    background-color: #007bff !important;
+    color: white !important;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -124,4 +128,34 @@
 
 .testimonial-actions button:hover {
     background-color: #0056b3;
+}
+
+.modal-button {
+    padding: 8px 16px;
+    background-color: #007bff !important;
+    color: white !important;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.modal-button:hover {
+    background-color: #0056b3;
+}
+
+.modal-button:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.testimonial-modal-close {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 19px;
+    color: #333;
 }
