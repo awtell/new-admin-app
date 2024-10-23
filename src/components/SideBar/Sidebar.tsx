@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, userInitials, isOpen, toggl
     return (
         <div className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
-                <div className="user-avatar">{userInitials}</div>
+                <div className="sidebar-user-avatar">{userInitials}</div>
                 <div className="username">{username}</div>
                 <button className="close-button" onClick={toggleSidebar}>
                     <FontAwesomeIcon icon={faTimes} />

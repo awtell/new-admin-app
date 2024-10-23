@@ -17,7 +17,6 @@ const editEventSpeaker = (speaker: any) => {
 };
 
 const deleteEventSpeaker = (IdEventSpeaker: number) => {
-    console.log(IdEventSpeaker)
     return axiosInstance.delete(`/Admin/Events/DeleteEventSpeaker`, { data: { IdEventSpeaker } });
 };
 

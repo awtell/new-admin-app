@@ -1,22 +1,11 @@
-body,
-html {
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-}
-
 .login-container {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
     background-image: url('../../assets/images/bg.jpg');
     background-size: cover;
     background-position: center;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 form {
@@ -57,7 +46,6 @@ button.submit-button {
     border: none;
     border-radius: 30px;
     font-size: 16px;
-    cursor: pointer;
     margin-top: 20px;
     display: flex;
     justify-content: center;
@@ -88,26 +76,6 @@ h2 {
 .error {
     color: red;
     text-align: center;
-}
-
-.forgot-password {
-    margin-top: 15px;
-    font-size: 14px;
-    text-align: right;
-    width: 90%;
-}
-
-.forgot-password a {
-    color: #000000;
-    text-decoration: none;
-    background-color: transparent;
-    font-size: 14px;
-    transition: color 0.3s ease;
-}
-
-.forgot-password a:hover {
-    color: #333333;
-    text-decoration: underline;
 }
 
 
@@ -141,7 +109,6 @@ h2 {
     transform: translateY(-50%);
     background: none;
     border: none;
-    cursor: pointer;
     font-size: 18px;
     color: #333;
 }

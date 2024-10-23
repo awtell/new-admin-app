@@ -30,10 +30,6 @@
     /* Other styles for the content */
 }
 
-/* Sidebar should have a higher z-index than the overlay */
-.sidebar {
-    z-index: 1000;
-}
 
 .app {
     position: relative;
@@ -61,9 +57,4 @@
 .content {
     padding: 20px;
     /* Other styles for the content */
-}
-
-/* Sidebar should have a higher z-index than the overlay */
-.sidebar {
-    z-index: 1000;
 }

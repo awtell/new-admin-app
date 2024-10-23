@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-const token = localStorage.getItem("token");
+const token = localStorage.getItem("JWT_Token");
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
@@ -12,12 +12,15 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    config.headers['Authorization'] = token;
+    if (token) {
+        config.headers['Authorization'] = token;
+    }
     return config;
 }, (error) => {
     return Promise.reject(error);
 });
+
+
 
 
 export default axiosInstance;

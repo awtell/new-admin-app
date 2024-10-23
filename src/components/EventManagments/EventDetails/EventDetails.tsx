@@ -74,7 +74,7 @@ const EventDetails = () => {
     const [speakerToDelete, setSpeakerToDelete] = useState<Speaker | null>(null);
     const [isSavingEventInfo, setIsSavingEventInfo] = useState(false);
     const [isSavingPartner, setIsSavingPartner] = useState(false);
-    const [isSavingSpeakers, setIsSavingSpeakers] = useState(false);
+    const [isSavingSpeakers] = useState(false);
     const [isCreatingSpeaker, setIsCreatingSpeaker] = useState(false);
 
     useEffect(() => {
@@ -193,10 +193,10 @@ const EventDetails = () => {
             setSelectedSpeakers(prev => prev.filter(s => s.IdSpeaker !== speaker.IdSpeaker));
         }
     };
-    
+
     const confirmRemoveSpeaker = async () => {
         if (!speakerToDelete) return;
-    
+
         try {
             const response = await SpeakerService.deleteEventSpeaker(speakerToDelete.IdEventSpeaker);
             if (response && response.status === 200) {

@@ -51,6 +51,7 @@ const EventManagments: React.FC = () => {
         };
         fetchData();
     }, []);
+
     useEffect(() => {
         if (!showForm) {
             setNewEvent({
@@ -63,6 +64,7 @@ const EventManagments: React.FC = () => {
             });
         }
     }, [showForm]);
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);

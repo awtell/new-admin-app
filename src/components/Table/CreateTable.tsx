@@ -34,8 +34,7 @@ const CreateTable: React.FC = () => {
       tableData.CostPerChair !== '' &&
       tableData.Availability !== '' &&
       tableData.StartTime !== '' &&
-      tableData.EndTime !== '' &&
-      tableData.Attachment !== ''
+      tableData.EndTime !== ''
     );
   };
 
@@ -52,7 +51,7 @@ const CreateTable: React.FC = () => {
   };
 
   useEffect(() => {
-    document.title = 'Create Table - Event Manager';
+    document.title = 'Create Table';
   }, []);
 
   const handleCreateTable = async () => {
@@ -73,7 +72,6 @@ const CreateTable: React.FC = () => {
       }
 
       const response = await TableService.insertTable(formData);
-      console.log(response.data);
       navigate('/tables');
     } catch (error) {
       console.error('Error creating table:', error);
@@ -197,7 +195,6 @@ const CreateTable: React.FC = () => {
                       setTableData({ ...tableData, Attachment: e.target.files[0].name });
                     }
                   }}
-                  required
                 />
               </div>
             </div>

@@ -19,7 +19,6 @@
     border: none;
     color: white;
     font-size: 24px;
-    cursor: pointer;
     border-radius: 50%;
     padding: 10px;
     display: flex;
@@ -56,19 +55,19 @@
     align-items: center;
     font-size: 18px;
     font-weight: bold;
-    cursor: pointer;
     text-transform: uppercase;
 }
 
 .dropdown {
     position: absolute;
-    top: 50px; /* Adjust to position below the avatar */
+    top: 50px;
+    /* Adjust to position below the avatar */
     right: 0;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    min-width: 120px; /* Ensure enough space for the text */
+    min-width: 120px;
 }
 
 .logout-button {
@@ -79,7 +78,6 @@
     padding: 10px 15px;
     text-align: left;
     width: 100%;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: flex-start;

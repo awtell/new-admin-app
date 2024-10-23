@@ -78,7 +78,6 @@ const ForgotPassword: React.FC = () => {
         event.preventDefault();
         setLoading(true);
         const code = verificationCode.join('');
-        console.log('email', email, 'code', code);
         try {
             const code = verificationCode.join('');
             const response = await AuthService.verifyCode(email, code);
@@ -110,7 +109,7 @@ const ForgotPassword: React.FC = () => {
     const isFormValid = () => email.length > 0;
 
     return (
-        <div className="forgot-password-container">
+        <div className="login-container">
             {loading ? (
                 <LoadingAnimation />
             ) : (

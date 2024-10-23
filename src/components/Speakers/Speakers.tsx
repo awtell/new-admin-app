@@ -132,7 +132,6 @@ const Speakers: React.FC = () => {
             return;
         }
 
-        console.log("Deleting Speaker:", speakerToDelete);
         setLoading(true);
         const speakerId = Number(speakerToDelete);
         if (isNaN(speakerId)) {

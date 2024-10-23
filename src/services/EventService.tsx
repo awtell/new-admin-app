@@ -13,7 +13,6 @@ const getEventById = (id: number) => {
 }
 
 const updateEvent = (event: any) => {
-    console.log(event)
     return axiosInstance.put(`/Admin/Events/UpdateEvent`, event);
 }
 

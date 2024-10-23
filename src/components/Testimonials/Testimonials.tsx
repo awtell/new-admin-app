@@ -30,6 +30,7 @@ const Testimonials: React.FC = () => {
     const [buttonLoading, setButtonLoading] = useState(false);
 
     useEffect(() => {
+        document.title = "Testimonials Management";
         const fetchTestimonials = async () => {
             setLoading(true);
             try {
@@ -99,7 +100,6 @@ const Testimonials: React.FC = () => {
 
     const handleDeleteTestimonial = (IdTestimonial: number) => {
         if (IdTestimonial !== undefined) {
-            console.log('IdTestimonial', IdTestimonial);
             setTestimonialToDelete(IdTestimonial);
             setShowConfirmation(true);
         } else {
@@ -108,7 +108,6 @@ const Testimonials: React.FC = () => {
     };
 
     const confirmDeleteTestimonial = () => {
-        console.log("Deleting testimonial:", testimonialToDelete);
         if (testimonialToDelete) {
             setButtonLoading(true);
             TestimonialsService.deleteTestimonial(testimonialToDelete)
@@ -218,15 +217,17 @@ const Testimonials: React.FC = () => {
                             value={newTestimonial.TestimonialDetails}
                             onChange={handleInputChange}
                         />
-                        {editingId ? (
-                            <button className="modal-button" onClick={handleSaveTestimonial} disabled={buttonLoading || isFormClean()}>
-                                {buttonLoading ? 'Saving...' : 'Save'}
-                            </button>
-                        ) : (
-                            <button className="modal-button" onClick={handleAddTestimonial} disabled={buttonLoading}>
-                                {buttonLoading ? 'Adding...' : 'Add'}
-                            </button>
-                        )}
+                        <div style={{ textAlign: 'center' }}>
+                            {editingId ? (
+                                <button className="modal-button" onClick={handleSaveTestimonial} disabled={buttonLoading || isFormClean()}>
+                                    {buttonLoading ? 'Saving...' : 'Save'}
+                                </button>
+                            ) : (
+                                <button className="modal-button" onClick={handleAddTestimonial} disabled={buttonLoading}>
+                                    {buttonLoading ? 'Adding...' : 'Add'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
