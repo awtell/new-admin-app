@@ -30,6 +30,8 @@ const Tables = () => {
     const [isLoading, setIsLoading] = useState(false); // Loading for save
     const [isDeleting, setIsDeleting] = useState(false); // Loading for delete
     const [isConfirmDelete, setIsConfirmDelete] = useState(false); // Confirm modal
+    const [message, setMessage] = useState<string | null>(null);
+    const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -50,7 +52,7 @@ const Tables = () => {
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (selectedTable) {
-            const { name, value } = e.target;
+            const { name, value, type, checked } = e.target;
 
             if (name === 'StartTime' || name === 'EndTime') {
                 const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -62,6 +64,11 @@ const Tables = () => {
                 } else {
                     console.error('Invalid time format. Please use HH:mm format.');
                 }
+            } else if (name === 'Availability') {
+                setSelectedTable({
+                    ...selectedTable,
+                    [name]: checked ? 1 : 0,
+                });
             } else {
                 setSelectedTable({
                     ...selectedTable,
@@ -77,29 +84,33 @@ const Tables = () => {
 
         try {
             const response = await TableService.updateTable(selectedTable);
-           
 
             if (response.status === 200) {
-               
                 if (selectedTable) {
                     setTables(prevTables =>
                         prevTables.map(t => (t.IdEventTable === selectedTable.IdEventTable ? selectedTable : t))
                     );
                 }
+                setMessage('Table updated successfully!');
+                setMessageType('success');
             } else {
                 console.error('Failed to update table:', response);
+                setMessage('Failed to update table.');
+                setMessageType('error');
             }
         } catch (error) {
             console.error('Error updating table:', error);
+            setMessage('Error updating table.');
+            setMessageType('error');
         } finally {
             setIsLoading(false);
             setIsModalOpen(false);
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
         }
     };
 
     const handleDeleteClick = () => {
         setIsModalOpen(false);
-
         setIsConfirmDelete(true);
     };
 
@@ -112,15 +123,23 @@ const Tables = () => {
 
                 if (response.status === 200) {
                     setTables(prevTables => prevTables.filter(t => t.IdEventTable !== selectedTable.IdEventTable));
+                    setMessage('Table deleted successfully!');
+                    setMessageType('success');
                 } else {
                     console.error('Failed to delete table:', response);
+                    setMessage('Failed to delete table.');
+                    setMessageType('error');
                 }
+
             } catch (error) {
                 console.error('Error deleting table:', error);
+                setMessage('Error deleting table.');
+                setMessageType('error');
             } finally {
                 setIsDeleting(false);
                 setIsConfirmDelete(false);
                 setIsModalOpen(false);
+                setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
             }
         }
     };
@@ -166,6 +185,12 @@ const Tables = () => {
                 />
             </div>
 
+            {message &&
+                <div className={`message-bar ${messageType}`}>
+                    {message}
+                    <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
+                </div>
+            }
             <div className="table-grid">
                 {isLoading ? (
                     <LoadingAnimation />
@@ -186,7 +211,7 @@ const Tables = () => {
                                 </div>
                                 <p>Capacity: {table.Capacity}</p>
                                 <p>Cost per chair: ${table.CostPerChair}</p>
-                                <p>Availability: {table.Availability}</p>
+                                <p> {table.Availability ? 'Available' : 'Unavailable'}</p>
                                 <p>Start Time: {table.StartTime}</p>
                                 <p>End Time: {table.EndTime}</p>
                             </div>
@@ -240,16 +265,36 @@ const Tables = () => {
                                     onChange={handleFormChange}
                                 />
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="Availability">Availability:</label>
-                                <input
-                                    id="Availability"
-                                    type="number"
-                                    name="Availability"
-                                    value={selectedTable.Availability}
-                                    onChange={handleFormChange}
-                                />
+                            <div className="availability-group">
+                                <div className="chip-list">
+                                    <span
+                                        className={`chip ${selectedTable.Availability === 1 ? 'available' : ''}`}
+                                        onClick={() => handleFormChange({ target: { name: 'Availability', value: '1', type: 'checkbox', checked: true } } as React.ChangeEvent<HTMLInputElement>)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            marginRight: '0.5rem',
+                                            padding: '0.3rem',
+                                            borderRadius: '5px',
+                                            backgroundColor: selectedTable.Availability === 1 ? '#d0f0c0' : '#f0f0f0',
+                                        }}
+                                    >
+                                        Available
+                                    </span>
+                                    <span
+                                        className={`chip ${selectedTable.Availability === 0 ? 'unavailable' : ''}`}
+                                        onClick={() => handleFormChange({ target: { name: 'Availability', value: '0', type: 'checkbox', checked: false } } as React.ChangeEvent<HTMLInputElement>)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            padding: '0.3rem',
+                                            borderRadius: '5px',
+                                            backgroundColor: selectedTable.Availability === 0 ? '#f8d7da' : '#f0f0f0',
+                                        }}
+                                    >
+                                        Unavailable
+                                    </span>
+                                </div>
                             </div>
+
                             <div className="form-group">
                                 <label htmlFor="StartTime">Start Time:</label>
                                 <input
@@ -274,7 +319,7 @@ const Tables = () => {
                                 />
                             </div>
                             <button type="submit" disabled={isLoading}>
-                                {isLoading ? 'Saving...' : 'Save Changes'}
+                                {isLoading ? <LoadingAnimation /> : 'Save Changes'}
                             </button>
                             <button
                                 type="button"

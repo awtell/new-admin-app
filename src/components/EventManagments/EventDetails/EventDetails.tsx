@@ -351,146 +351,154 @@ const EventDetails = () => {
     return (
         <>
             {isLoading ? (
-                <div className="loading-container">
-                    <LoadingAnimation />
-                </div>
+            <div className="loading-container">
+                <LoadingAnimation />
+            </div>
             ) : (
-                <div className="event-details-container">
-                    {/* Event Information */}
-                    <div className="event-section">
-                        <h2>Event Information</h2>
-                        <form onSubmit={handleSaveEventInfo}>
-                            <label>Event Name</label>
-                            <input type="text" name="EventName" value={event.EventName} onChange={handleInputChange} />
+            <div className="event-details-container">
+                {/* Event Information */}
+                <div className="event-section">
+                <h2>Event Information</h2>
+                <form onSubmit={handleSaveEventInfo}>
+                    <label>Event Name</label>
+                    <input type="text" name="EventName" value={event.EventName} onChange={handleInputChange} />
 
-                            <label>Location</label>
-                            <input type="text" name="Location" value={event.Location} onChange={handleInputChange} />
+                    <label>Location</label>
+                    <input type="text" name="Location" value={event.Location} onChange={handleInputChange} />
 
-                            <label>Start Date</label>
-                            <input type="date" name="StartDate" value={event.StartDate.toISOString().split('T')[0]} onChange={handleInputChange} />
+                    <label>Start Date</label>
+                    <input type="date" name="StartDate" value={event.StartDate.toISOString().split('T')[0]} onChange={handleInputChange} />
 
-                            <label>End Date</label>
-                            <input type="date" name="EndDate" value={event.EndDate.toISOString().split('T')[0]} onChange={handleInputChange} />
+                    <label>End Date</label>
+                    <input type="date" name="EndDate" value={event.EndDate.toISOString().split('T')[0]} onChange={handleInputChange} />
 
-                            <label>Description</label>
-                            <textarea name="EventDescription" value={event.EventDescription} onChange={handleInputChange}></textarea>
+                    <label>Description</label>
+                    <textarea name="EventDescription" value={event.EventDescription} onChange={handleInputChange}></textarea>
 
-                            <label>Overview</label>
-                            <textarea name="EventOverview" value={event.EventOverview} onChange={handleInputChange}></textarea>
+                    <label>Overview</label>
+                    <textarea name="EventOverview" value={event.EventOverview} onChange={handleInputChange}></textarea>
 
-                            <button className="btn" type="submit" disabled={isSavingEventInfo}>
-                                {isSavingEventInfo ? <LoadingAnimation /> : 'Save'}
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Sponsors and Partners */}
-                    {/* Sponsors and Partners */}
-                    <div className="event-section">
-                        <h2>Partners</h2>
-                        <select onChange={handlePartnerSelect}>
-                            <option value="">Select Partner</option>
-                            <option value="new">Add New Partner</option>
-                            {selectedPartner
-                                .sort((a, b) => a.SaveName.localeCompare(b.SaveName))
-                                .map(partner => (
-                                    <option key={partner.IdEventPartner} value={partner.IdEventPartner}>{partner.SaveName}</option>
-                                ))}
-                        </select>
-
-                        <div className="speakers-list" style={{ textAlign: 'center' }}>
-                            {selectedPartner.map((partner) => (
-                                <div key={partner.IdEventPartner} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
-                                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                                        <img src="https://via.placeholder.com/150" alt={partner.SaveName} style={{ display: 'block', margin: '0 auto' }} />
-                                        <button onClick={() => handleRemovePartner(partner)} className="remove-s-btn">×</button>
-                                    </div>
-                                    <p>{partner.SaveName}</p>
-                                </div>
-                            ))}
-                        </div>
-
-                        {!isNewPartner && selectedPartner.length > 0 && (
-                            <button className="btn" onClick={() => selectedPartner.forEach(partner => handleSaveEventPartner(partner.Attachment1, event.IdEvent))} disabled={isSavingPartner}>
-                                {isSavingPartner ? <LoadingAnimation /> : 'Save All Partners'}
-                            </button>
-                        )}
-                    </div>
-
-
-                    {/* Speakers Section */}
-                    <div className="event-section">
-                        <h2>Speakers</h2>
-                        <select onChange={handleSpeakerSelect}>
-                            <option value="">Select Speaker</option>
-                            <option value="new">Add New Speaker</option>
-                            {speakers
-                                .filter(speaker => !selectedSpeakers.some(s => s.IdSpeaker === speaker.IdSpeaker)) // Exclude assigned speakers
-                                .slice()
-                                .filter(speaker => speaker.SpeakerName) // Ensure SpeakerName is defined
-                                .sort((a, b) => a.SpeakerName.localeCompare(b.SpeakerName))
-                                .map(speaker => (
-                                    <option key={speaker.IdSpeaker} value={speaker.IdSpeaker}>{speaker.SpeakerName}</option>
-                                ))}
-                        </select>
-                        <div className="speakers-list" style={{ textAlign: 'center' }}>
-                            {selectedSpeakers.map(speaker => (
-                                <div key={speaker.IdSpeaker} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
-                                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                                        <img src="https://via.placeholder.com/150" alt={speaker.SpeakerName} style={{ display: 'block', margin: '0 auto' }} />
-                                        <button onClick={() => handleRemoveSpeaker(speaker)} className="remove-speaker-btn">×</button>
-                                    </div>
-                                    <p>  {`${speaker.SpeakerName}`} <br /> {`${speaker.SpeakerTitle}`}</p>
-                                </div>
-                            ))}
-                        </div>
-                        {!isNewSpeaker && selectedSpeakers.length > 0 && (
-                            <button className="btn" onClick={() => selectedSpeakers.forEach(speaker => handleSaveEventSpeaker(speaker.IdSpeaker, event.IdEvent))} disabled={isSavingSpeakers}>
-                                {isSavingSpeakers ? <LoadingAnimation /> : 'Save All Speakers'}
-                            </button>
-                        )}
-
-                        {isNewSpeaker && (
-                            <div className="new-speaker-form">
-                                <form onSubmit={handleCreateSpeaker}>
-                                    <label>Speaker Name</label>
-                                    <input
-                                        type="text"
-                                        value={newSpeakerName}
-                                        onChange={(e) => setNewSpeakerName(e.target.value)}
-                                    />
-                                    <label>Speaker Title</label>
-                                    <input
-                                        type="text"
-                                        value={newSpeakerTitle}
-                                        onChange={(e) => setNewSpeakerTitle(e.target.value)}
-                                    />
-                                    <label>Speaker Image</label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setNewSpeakerImage(e.target.files?.[0] || null)}
-                                    />
-                                    <button className="btn" type="submit" disabled={isCreatingSpeaker}>
-                                        {isCreatingSpeaker ? <LoadingAnimation /> : 'Create Speaker'}
-                                    </button>
-                                </form>
-                            </div>
-                        )}
-                    </div>
+                    <button className="btn" type="submit" disabled={isSavingEventInfo}>
+                    {isSavingEventInfo ? <LoadingAnimation /> : 'Save'}
+                    </button>
+                </form>
                 </div>
+
+                {/* Sponsors and Partners */}
+                <div className="event-section">
+                <h2>Partners</h2>
+                <select onChange={handlePartnerSelect}>
+                    <option value="">Select Partner</option>
+                    <option value="new">Add New Partner</option>
+                    {selectedPartner
+                    .sort((a, b) => a.SaveName.localeCompare(b.SaveName))
+                    .map(partner => (
+                        <option key={partner.IdEventPartner} value={partner.IdEventPartner}>{partner.SaveName}</option>
+                    ))}
+                </select>
+
+                <div className="speakers-list" style={{ textAlign: 'center' }}>
+                    {selectedPartner.map((partner) => (
+                    <div key={partner.IdEventPartner} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <img src="https://via.placeholder.com/150" alt={partner.SaveName} style={{ display: 'block', margin: '0 auto' }} />
+                            <button onClick={() => {
+                                handleRemovePartner(partner);
+                                setSelectedPartner(prev => prev.filter(p => p.IdEventPartner !== partner.IdEventPartner));
+                            }} className="remove-speaker-btn">×</button>
+                        </div>
+                        <p>{partner.SaveName}</p>
+                    </div>
+                    ))}
+                </div>
+
+                {!isNewPartner && selectedPartner.length > 0 && (
+                    <button className="btn" onClick={() => selectedPartner.forEach(partner => handleSaveEventPartner(partner.Attachment1, event.IdEvent))} disabled={isSavingPartner}>
+                    {isSavingPartner ? <LoadingAnimation /> : 'Save All Partners'}
+                    </button>
+                )}
+                </div>
+
+                {/* Speakers Section */}
+                <div className="event-section">
+                <h2>Speakers</h2>
+                <select onChange={handleSpeakerSelect}>
+                    <option value="">Select Speaker</option>
+                    <option value="new">Add New Speaker</option>
+                    {speakers
+                    .filter(speaker => !selectedSpeakers.some(s => s.IdSpeaker === speaker.IdSpeaker)) // Exclude assigned speakers
+                    .slice()
+                    .filter(speaker => speaker.SpeakerName) // Ensure SpeakerName is defined
+                    .sort((a, b) => a.SpeakerName.localeCompare(b.SpeakerName))
+                    .map(speaker => (
+                        <option key={speaker.IdSpeaker} value={speaker.IdSpeaker}>{speaker.SpeakerName}</option>
+                    ))}
+                </select>
+                <div className="speakers-list" style={{ textAlign: 'center' }}>
+                    {selectedSpeakers.map(speaker => (
+                    <div key={speaker.IdSpeaker} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <img src="https://via.placeholder.com/150" alt={speaker.SpeakerName} style={{ display: 'block', margin: '0 auto' }} />
+                        <button onClick={() => handleRemoveSpeaker(speaker)} className="remove-speaker-btn">×</button>
+                        </div>
+                        <p>  {`${speaker.SpeakerName}`} <br /> {`${speaker.SpeakerTitle}`}</p>
+                    </div>
+                    ))}
+                </div>
+                {!isNewSpeaker && selectedSpeakers.length > 0 && (
+                    <button className="btn" onClick={() => selectedSpeakers.forEach(speaker => handleSaveEventSpeaker(speaker.IdSpeaker, event.IdEvent))} disabled={isSavingSpeakers}>
+                    {isSavingSpeakers ? <LoadingAnimation /> : 'Save All Speakers'}
+                    </button>
+                )}
+
+                {isNewSpeaker && (
+                    <div className="new-speaker-form">
+                    <form onSubmit={handleCreateSpeaker}>
+                        <label>Speaker Name</label>
+                        <input
+                        type="text"
+                        value={newSpeakerName}
+                        onChange={(e) => setNewSpeakerName(e.target.value)}
+                        />
+                        <label>Speaker Title</label>
+                        <input
+                        type="text"
+                        value={newSpeakerTitle}
+                        onChange={(e) => setNewSpeakerTitle(e.target.value)}
+                        />
+                        <label>Speaker Image</label>
+                        <input
+                        type="file"
+                        onChange={(e) => setNewSpeakerImage(e.target.files?.[0] || null)}
+                        />
+                        <button className="btn" type="submit" disabled={isCreatingSpeaker}>
+                        {isCreatingSpeaker ? <LoadingAnimation /> : 'Create Speaker'}
+                        </button>
+                    </form>
+                    </div>
+                )}
+                </div>
+            </div>
             )}
             {message && (
-                <div className={`message-bar ${messageType}`}>
-                    {message}
-                    <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
-                </div>
+            <div className={`message-bar ${messageType}`}>
+                {message}
+                <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
+            </div>
             )}
-            {isConfirmationModalOpen && (
-                <ConfirmationModal
-                    message="Are you sure you want to delete this speaker?"
-                    onConfirm={confirmRemoveSpeaker}
-                    onCancel={() => setIsConfirmationModalOpen(false)}
-                />
+            {isConfirmationModalOpen && speakerToDelete && (
+            <ConfirmationModal
+                message="Are you sure you want to delete this speaker?"
+                onConfirm={confirmRemoveSpeaker}
+                onCancel={() => setIsConfirmationModalOpen(false)}
+            />
+            )}
+            {isConfirmationModalOpen && partnerToDelete && (
+            <ConfirmationModal
+                message="Are you sure you want to delete this partner?"
+                onConfirm={confirmRemovePartner}
+                onCancel={() => setIsConfirmationModalOpen(false)}
+            />
             )}
         </>
     );

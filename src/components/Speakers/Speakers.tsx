@@ -26,6 +26,8 @@ const Speakers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+    const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
+    const [buttonLoading, setButtonLoading] = useState(false);
 
     useEffect(() => {
         const fetchSpeakers = async () => {
@@ -81,12 +83,14 @@ const Speakers: React.FC = () => {
             SpeakerImage: newSpeaker.SpeakerImage,
         };
 
-        setLoading(true);
+        setButtonLoading(true);
         try {
             if (editingId === null) {
                 // Create new speaker
                 await SpeakerService.addSpeaker(speakerData);
                 setSpeakers([...speakers, speakerData]);
+                setMessage('Speaker added successfully.');
+                setMessageType('success');
             } else {
                 // Edit existing speaker
                 await SpeakerService.editEventSpeaker(speakerData);
@@ -97,13 +101,18 @@ const Speakers: React.FC = () => {
                     return t;
                 });
                 setSpeakers(updatedSpeakers);
+                setMessage('Speaker updated successfully.');
+                setMessageType('success');
             }
             setEditingId(null);
             setShowForm(false);
         } catch (error) {
             console.error("Error saving speaker:", error);
+            setMessage('Error saving speaker.');
+            setMessageType('error');
         } finally {
-            setLoading(false);
+            setButtonLoading(false);
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
         }
     };
 
@@ -129,6 +138,7 @@ const Speakers: React.FC = () => {
         if (speakerToDelete === null) {
             console.error("Error: No speaker selected for deletion");
             setMessage('Error: No speaker selected for deletion');
+            setMessageType('error');
             return;
         }
 
@@ -137,6 +147,7 @@ const Speakers: React.FC = () => {
         if (isNaN(speakerId)) {
             console.error("Error: speakerToDelete is not a valid number");
             setMessage('Error: Invalid speaker ID');
+            setMessageType('error');
             setLoading(false);
             return;
         }
@@ -145,11 +156,16 @@ const Speakers: React.FC = () => {
             const updatedSpeakers = speakers.filter(s => s.IdSpeaker !== speakerId);
             setSpeakers(updatedSpeakers);
             setSpeakerToDelete(null);
+            setMessage('Speaker deleted successfully.');
+            setMessageType('success');
         } catch (error) {
             console.error("Error deleting speaker:", error);
+            setMessage('Error deleting speaker.');
+            setMessageType('error');
         } finally {
             setLoading(false);
             setShowConfirmation(false);
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
         }
     };
 
@@ -169,7 +185,6 @@ const Speakers: React.FC = () => {
 
     return (
         <div className="testimonial-management">
-            {loading && <LoadingAnimation />}
             <div className="testimonials-header">
                 <h1>Speakers</h1>
                 <button onClick={() => {
@@ -186,6 +201,12 @@ const Speakers: React.FC = () => {
                     onChange={handleSearchChange}
                 />
             </div>
+
+            {message &&
+                <div className={`message-bar ${messageType}`}>
+                    {message}
+                    <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
+                </div>}
 
             <div className="testimonials-grid">
                 {speakers.length > 0 ? (
@@ -231,8 +252,8 @@ const Speakers: React.FC = () => {
                                 name="SpeakerImage"
                                 onChange={handleImageChange}
                             />
-                            <button type="submit" disabled={loading}>
-                                {loading ? <LoadingAnimation /> : 'Save'}
+                            <button type="submit" disabled={buttonLoading}>
+                                {buttonLoading ? <LoadingAnimation /> : 'Save'}
                             </button>
                         </form>
                     </div>

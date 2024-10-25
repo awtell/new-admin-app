@@ -27,6 +27,7 @@ const Testimonials: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+    const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
     const [buttonLoading, setButtonLoading] = useState(false);
 
     useEffect(() => {
@@ -56,13 +57,20 @@ const Testimonials: React.FC = () => {
             const response = await TestimonialsService.insertTestimonial(newTestimonial);
             if (response.status === 200) {
                 setMessage('Testimonial added successfully.');
+                setMessageType('success');
                 setShowForm(false);
                 setTestimonials([...testimonials, newTestimonial]);
+            } else {
+                setMessage('Failed to add testimonial.');
+                setMessageType('error');
             }
         } catch (error) {
             console.error("Error inserting testimonial:", error);
+            setMessage('Error inserting testimonial.');
+            setMessageType('error');
         } finally {
             setButtonLoading(false);
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
         }
     };
 
@@ -89,12 +97,17 @@ const Testimonials: React.FC = () => {
                 setTestimonials(updatedTestimonials);
                 setEditingId(null);
                 setShowForm(false);
+                setMessage('Testimonial updated successfully.');
+                setMessageType('success');
             })
             .catch(error => {
                 console.error("Error updating testimonial:", error);
+                setMessage('Error updating testimonial.');
+                setMessageType('error');
             })
             .finally(() => {
                 setButtonLoading(false);
+                setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
             });
     };
 
@@ -115,12 +128,17 @@ const Testimonials: React.FC = () => {
                     setTestimonials(testimonials.filter(t => t.IdTestimonial !== testimonialToDelete));
                     setTestimonialToDelete(null);
                     setShowConfirmation(false);
+                    setMessage('Testimonial deleted successfully.');
+                    setMessageType('success');
                 })
                 .catch(error => {
                     console.error("Error deleting testimonial:", error);
+                    setMessage('Error deleting testimonial.');
+                    setMessageType('error');
                 })
                 .finally(() => {
                     setButtonLoading(false);
+                    setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
                 });
         }
     };
@@ -168,6 +186,12 @@ const Testimonials: React.FC = () => {
                     onChange={handleSearchChange}
                 />
             </div>
+
+            {message &&
+                <div className={`message-bar ${messageType}`}>
+                    {message}
+                    <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
+                </div>}
 
             <div className="testimonials-grid">
                 {filteredTestimonials.length > 0 ? (
@@ -220,11 +244,11 @@ const Testimonials: React.FC = () => {
                         <div style={{ textAlign: 'center' }}>
                             {editingId ? (
                                 <button className="modal-button" onClick={handleSaveTestimonial} disabled={buttonLoading || isFormClean()}>
-                                    {buttonLoading ? 'Saving...' : 'Save'}
+                                    {buttonLoading ? <LoadingAnimation /> : 'Save'}
                                 </button>
                             ) : (
                                 <button className="modal-button" onClick={handleAddTestimonial} disabled={buttonLoading}>
-                                    {buttonLoading ? 'Adding...' : 'Add'}
+                                    {buttonLoading ? <LoadingAnimation /> : 'Add'}
                                 </button>
                             )}
                         </div>
