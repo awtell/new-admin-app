@@ -28,8 +28,11 @@ const EventDetails = () => {
     }
 
     interface Partner {
+        IdEventPartner: number;
+        IdEvent: number;
+        SaveName: string;
         Attachment1: File | null;
-        Attachment2: File | null;
+
     }
 
     interface Speaker {
@@ -60,22 +63,38 @@ const EventDetails = () => {
         SaveName: '',
     });
 
-    const [partner, setPartner] = useState<Partner>({ Attachment1: null, Attachment2: null });
-    const [isLoading, setIsLoading] = useState(true);
+    const [partner, setPartner] = useState<Partner>({
+        IdEventPartner: 0,
+        IdEvent: 0,
+        SaveName: '',
+        Attachment1: null,
+    })
+
+
+
+    const [selectedPartner, setSelectedPartner] = useState<Partner[]>([]);
+    const [partnerToDelete, setPartnerToDelete] = useState<Partner | null>(null);
+    const [isNewPartner, setIsNewPartner] = useState(false);
+    const [newSaveName, setNewSaveName] = useState('');
+    const [newAttachment1, setNewAttachment1] = useState<File | null>(null);
+    const [isSavingPartner, setIsSavingPartner] = useState(false);
+    const [isCreatingPartner, setIsCreatingPartner] = useState(false);
+
     const [speakers, setSpeakers] = useState<Speaker[]>([]);
     const [selectedSpeakers, setSelectedSpeakers] = useState<Speaker[]>([]);
-    const [isNewSpeaker, setIsNewSpeaker] = useState(false);
     const [newSpeakerName, setNewSpeakerName] = useState('');
     const [newSpeakerTitle, setNewSpeakerTitle] = useState('');
     const [newSpeakerImage, setNewSpeakerImage] = useState<File | null>(null);
+    const [isNewSpeaker, setIsNewSpeaker] = useState(false);
+    const [speakerToDelete, setSpeakerToDelete] = useState<Speaker | null>(null);
+    const [isCreatingSpeaker, setIsCreatingSpeaker] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState<string | null>(null);
     const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-    const [speakerToDelete, setSpeakerToDelete] = useState<Speaker | null>(null);
     const [isSavingEventInfo, setIsSavingEventInfo] = useState(false);
-    const [isSavingPartner, setIsSavingPartner] = useState(false);
     const [isSavingSpeakers] = useState(false);
-    const [isCreatingSpeaker, setIsCreatingSpeaker] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -83,13 +102,20 @@ const EventDetails = () => {
                 const eventResponse = await EventService.getEventById(Number(IdEvent));
                 const eventData = eventResponse.data.My_Result.Event;
                 setEvent({ ...eventData, StartDate: new Date(eventData.StartDate), EndDate: new Date(eventData.EndDate) });
-                const partnerData = eventResponse.data.My_Result.Partners;
-                setPartner({ ...partnerData });
+
 
                 const speakersResponse = await SpeakerService.getAllSpeakers();
                 setSpeakers(speakersResponse.data.My_Result);
                 const selectedSpeakersData = eventResponse.data.My_Result.Speakers;
                 setSelectedSpeakers(selectedSpeakersData || []);
+
+                const partnerResponse = eventResponse.data.My_Result.Partners;
+
+                const partnersData = partnerResponse.map((partner: any) => ({
+                    SaveName: partner.SaveName,
+                    IdEventPartner: partner.IdEventPartner,
+                }));
+                setSelectedPartner(partnersData);
                 setMessageType('success');
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -126,33 +152,6 @@ const EventDetails = () => {
         setTimeout(() => { setMessage(null); setMessageType(null); }, 3000);
     };
 
-    const handleSavePartner = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSavingPartner(true);
-        try {
-            if (partner.Attachment1 && partner.Attachment2) {
-                const formData = new FormData();
-                formData.append("eventId", IdEvent || '');
-                formData.append("attachment1", partner.Attachment1);
-                formData.append("attachment2", partner.Attachment2);
-
-                const response = await PartnerService.insertPartner(IdEvent || '', partner.Attachment1, partner.Attachment2);
-                if (response && response.status === 200) {
-                    setMessage('Partner added successfully.');
-                    setMessageType('success');
-                }
-            } else {
-                setMessage('Please upload both attachments.');
-                setMessageType('error');
-            }
-        } catch (error) {
-            console.error("Error inserting partner:", error);
-            setMessage('Error adding partner, please try again later.');
-            setMessageType('error');
-        } finally {
-            setIsSavingPartner(false);
-        }
-    };
 
     const handleSpeakerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
@@ -166,6 +165,20 @@ const EventDetails = () => {
             }
         }
     };
+
+    const handlePartnerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = e.target.value;
+        if (selectedId === 'new') {
+            setIsNewPartner(true);
+        } else {
+            setIsNewPartner(false);
+            const selected = selectedPartner.find(partner => partner.IdEventPartner === Number(selectedId));
+            if (selected) {
+                setSelectedPartner([selected]);
+            }
+        }
+    }
+
 
     const handleSaveEventSpeaker = async (IdSpeaker: number, IdEvent: number) => {
         try {
@@ -185,6 +198,24 @@ const EventDetails = () => {
         }
     };
 
+    const handleSaveEventPartner = async (Attachments: any, IdEvent: number) => {
+        try {
+            const response = await PartnerService.insertPartner(Attachments, IdEvent);
+            if (response && response.status === 200) {
+                setMessage('Partner added successfully.');
+                setMessageType('success');
+                // const addedPartner = partner.find(partner => partner.IdEventPartner === IdEvent);
+                // if (addedPartner) {
+                //     setSelectedPartner(addedPartner);
+                // }
+            }
+        } catch (error) {
+            console.error("Error adding partner to event:", error);
+            setMessage('Error adding partner. Please try again later.');
+            setMessageType('error');
+        }
+    }
+
     const handleRemoveSpeaker = (speaker: Speaker) => {
         if (speaker.IdEventSpeaker) {
             setSpeakerToDelete(speaker);
@@ -193,6 +224,37 @@ const EventDetails = () => {
             setSelectedSpeakers(prev => prev.filter(s => s.IdSpeaker !== speaker.IdSpeaker));
         }
     };
+
+    const handleRemovePartner = (partner: Partner) => {
+        if (partner.IdEventPartner) {
+            setPartnerToDelete(partner);
+            setIsConfirmationModalOpen(true);
+        }
+        else {
+            // setSelectedPartner(null);
+        }
+    }
+
+    const confirmRemovePartner = async () => {
+        if (!partnerToDelete) return;
+
+        try {
+            const response = await PartnerService.deletePartner(partnerToDelete.IdEventPartner);
+            if (response && response.status === 200) {
+                setMessage('Partner removed successfully.');
+                setMessageType('success');
+                // setSelectedPartner(null);
+            }
+        } catch (error) {
+            console.error('Error removing partner from event:', error);
+            setMessage('Error removing partner, please try again later.');
+            setMessageType('error');
+        } finally {
+            setIsConfirmationModalOpen(false);
+            setPartnerToDelete(null);
+        }
+    }
+
 
     const confirmRemoveSpeaker = async () => {
         if (!speakerToDelete) return;
@@ -251,6 +313,41 @@ const EventDetails = () => {
         }
     };
 
+    // const handleCreatePartner = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     setIsSavingPartner(true);
+    //     const formData = new FormData();
+    //     formData.append('IdEvent', event.IdEvent.toString());
+    //     formData.append('SaveName', selectedPartner?.SaveName || '');
+
+    //     if (selectedPartner?.Attachment1) {
+    //         formData.append('Attachment1', selectedPartner.Attachment1);
+    //     }
+
+    //     try {
+    //         const response = await PartnerService.insertPartner(formData, event.IdEvent);
+    //         if (response.status === 200) {
+    //             const newPartner = response.data;
+    //             setPartner([...partner, newPartner]);
+    //             setSelectedPartner(newPartner);
+    //             setMessage('Partner created successfully!');
+    //             setMessageType('success');
+    //             // Refetch data to update the list of partners
+    //             const partnerResponse = await PartnerService.getPartners();
+    //             setPartner(partnerResponse.data.My_Result);
+    //         } else {
+    //             setMessage('Failed to create partner.');
+    //             setMessageType('error');
+    //         }
+    //     } catch (error) {
+    //         setMessage('Error creating partner.');
+    //         setMessageType('error');
+    //     } finally {
+    //         setIsSavingPartner(false);
+    //     }
+    // }
+
+
     return (
         <>
             {isLoading ? (
@@ -288,22 +385,38 @@ const EventDetails = () => {
                     </div>
 
                     {/* Sponsors and Partners */}
+                    {/* Sponsors and Partners */}
                     <div className="event-section">
-                        <h2>Sponsors and Partners</h2>
-                        <form onSubmit={handleSavePartner}>
-                            <input type="file" onChange={(e) => {
-                                const files = e.target.files;
-                                if (files && files.length >= 2) {
-                                    setPartner({ Attachment1: files[0], Attachment2: files[1] });
-                                } else {
-                                    setMessage('Please select two files.');
-                                }
-                            }} multiple />
-                            <button type="submit" className="btn" disabled={isSavingPartner}>
-                                {isSavingPartner ? <LoadingAnimation /> : 'Save'}
+                        <h2>Partners</h2>
+                        <select onChange={handlePartnerSelect}>
+                            <option value="">Select Partner</option>
+                            <option value="new">Add New Partner</option>
+                            {selectedPartner
+                                .sort((a, b) => a.SaveName.localeCompare(b.SaveName))
+                                .map(partner => (
+                                    <option key={partner.IdEventPartner} value={partner.IdEventPartner}>{partner.SaveName}</option>
+                                ))}
+                        </select>
+
+                        <div className="speakers-list" style={{ textAlign: 'center' }}>
+                            {selectedPartner.map((partner) => (
+                                <div key={partner.IdEventPartner} className="selected-speaker" style={{ display: 'inline-block', margin: '10px', position: 'relative' }}>
+                                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                                        <img src="https://via.placeholder.com/150" alt={partner.SaveName} style={{ display: 'block', margin: '0 auto' }} />
+                                        <button onClick={() => handleRemovePartner(partner)} className="remove-s-btn">×</button>
+                                    </div>
+                                    <p>{partner.SaveName}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {!isNewPartner && selectedPartner.length > 0 && (
+                            <button className="btn" onClick={() => selectedPartner.forEach(partner => handleSaveEventPartner(partner.Attachment1, event.IdEvent))} disabled={isSavingPartner}>
+                                {isSavingPartner ? <LoadingAnimation /> : 'Save All Partners'}
                             </button>
-                        </form>
+                        )}
                     </div>
+
 
                     {/* Speakers Section */}
                     <div className="event-section">

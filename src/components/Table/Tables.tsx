@@ -77,10 +77,10 @@ const Tables = () => {
 
         try {
             const response = await TableService.updateTable(selectedTable);
-            console.log(response);
+           
 
             if (response.status === 200) {
-                console.log('Table updated successfully');
+               
                 if (selectedTable) {
                     setTables(prevTables =>
                         prevTables.map(t => (t.IdEventTable === selectedTable.IdEventTable ? selectedTable : t))
@@ -109,10 +109,8 @@ const Tables = () => {
         if (selectedTable) {
             try {
                 const response = await TableService.deleteTable(selectedTable.IdEventTable);
-                console.log(response);
 
                 if (response.status === 200) {
-                    console.log('Table deleted successfully');
                     setTables(prevTables => prevTables.filter(t => t.IdEventTable !== selectedTable.IdEventTable));
                 } else {
                     console.error('Failed to delete table:', response);

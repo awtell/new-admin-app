@@ -52,8 +52,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             const response = await AuthService.authenticate({ UserName, Password });
             setTimeout(() => {
                 const token = response.data.My_Result.JWT_Token;
-                localStorage.setItem('token', token);
-
+                localStorage.setItem('JWT_Token', token);
                 onLoginSuccess(token);
                 navigate('/analytics');
                 setLoading(false);

@@ -14,6 +14,7 @@ import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import Orders from './components/Orders/Orders';
 import Testimonials from './components/Testimonials/Testimonials';
 import Speakers from './components/Speakers/Speakers';
+import ResetPwd from './components/ForgotPassword/ResetPwd';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -72,6 +73,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPwd />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         )}

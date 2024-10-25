@@ -1,26 +1,40 @@
 import axios, { AxiosInstance } from "axios";
-const token = localStorage.getItem("JWT_Token");
+
+// Function to get token from localStorage
+const getToken = () => localStorage.getItem("JWT_Token");
+const getXsrfToken = () => localStorage.getItem("XSRF-TOKEN");
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
-const axiosInstance: AxiosInstance = axios.create({
+const instance: AxiosInstance = axios.create({
     headers: {
-        "Authorization": token,
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
     }
 });
 
-axiosInstance.interceptors.request.use((config) => {
+// Interceptor to set the token in headers for each request
+instance.interceptors.request.use((config) => {
+    const token = getToken();
+    const xsrfToken = getXsrfToken();
+
     if (token) {
         config.headers['Authorization'] = token;
     }
+    if (xsrfToken) {
+        config.headers['X-XSRF-TOKEN'] = xsrfToken;
+    }
     return config;
 }, (error) => {
+    console.error('Request Error:', error);
     return Promise.reject(error);
 });
 
+// Interceptor to log responses
+instance.interceptors.response.use((response) => {
+    return response;
+}, (error) => {
+    console.error('Response Error:', error);
+    return Promise.reject(error);
+});
 
-
-
-export default axiosInstance;
+export default instance;

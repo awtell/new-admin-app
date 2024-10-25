@@ -78,6 +78,7 @@ const ForgotPassword: React.FC = () => {
         event.preventDefault();
         setLoading(true);
         const code = verificationCode.join('');
+        // console.log(code)
         try {
             const code = verificationCode.join('');
             const response = await AuthService.verifyCode(email, code);
@@ -108,13 +109,17 @@ const ForgotPassword: React.FC = () => {
 
     const isFormValid = () => email.length > 0;
 
+    const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+    };
+
     return (
         <div className="login-container">
             {loading ? (
                 <LoadingAnimation />
             ) : (
                 <>
-                    <form>
+                    <form onSubmit={handleFormSubmit}>
                         <img src={logo} alt="Logo" className="logo" />
                         {error && <p className="error-message">{error}</p>}
                         {!emailSubmitted ? (

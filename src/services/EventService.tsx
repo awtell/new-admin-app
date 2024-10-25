@@ -1,19 +1,19 @@
-import axiosInstance from "../axios";
+import instance from "../axios";
 
 const getEvents = () => {
-    return axiosInstance.get(`/Admin/Events/GetEvents?Offset=0`)
+    return instance.get(`/Admin/Events/GetEvents?Offset=0`)
 };
 
 const createEvent = (event: any) => {
-    return axiosInstance.post(`/Admin/Events/InsertEvent`, event);
+    return instance.post(`/Admin/Events/InsertEvent`, event);
 }
 
 const getEventById = (id: number) => {
-    return axiosInstance.get(`/Admin/Events/GetEvent?IdEvent=${id}`);
+    return instance.get(`/Admin/Events/GetEvent?IdEvent=${id}`);
 }
 
 const updateEvent = (event: any) => {
-    return axiosInstance.put(`/Admin/Events/UpdateEvent`, event);
+    return instance.put(`/Admin/Events/UpdateEvent`, event);
 }
 
 const EventService = {
