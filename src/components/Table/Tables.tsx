@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import ConfirmationModal from '../ConfirmationModal/ConfiramtionModal';
+import TopicModal from './TopicModal';
 
 const Tables = () => {
     const navigate = useNavigate();
@@ -27,9 +28,10 @@ const Tables = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-    const [isLoading, setIsLoading] = useState(false); // Loading for save
-    const [isDeleting, setIsDeleting] = useState(false); // Loading for delete
-    const [isConfirmDelete, setIsConfirmDelete] = useState(false); // Confirm modal
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isConfirmDelete, setIsConfirmDelete] = useState(false);
+    const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
 
@@ -144,6 +146,22 @@ const Tables = () => {
         }
     };
 
+    const handleAddTopicClick = () => {
+        setIsTopicModalOpen(true);
+    };
+
+    const handleTopicConfirm = (description: string, startTime: string, endTime: string) => {
+        // Handle the topic description and time here
+        console.log('Topic Description:', description);
+        console.log('Topic Start Time:', startTime);
+        console.log('Topic End Time:', endTime);
+        setIsTopicModalOpen(false);
+    };
+
+    const handleTopicCancel = () => {
+        setIsTopicModalOpen(false);
+    };
+
     useEffect(() => {
         document.title = 'Tables';
         const fetchTables = async () => {
@@ -198,6 +216,16 @@ const Tables = () => {
                     filteredTables.length > 0 ? (
                         filteredTables.map(table => (
                             <div key={table.IdEventTable} className="table-card" onClick={() => handleCardClick(table)}>
+                                <a
+                                    href="#"
+                                    className='tables-modal-add-topic'
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleAddTopicClick();
+                                    }}
+                                >
+                                    View Topic
+                                </a>
                                 <FontAwesomeIcon
                                     icon={faEdit}
                                     className="edit-icon"
@@ -295,32 +323,37 @@ const Tables = () => {
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label htmlFor="StartTime">Start Time:</label>
-                                <input
-                                    id="StartTime"
-                                    type="time"
-                                    name="StartTime"
-                                    className="form-control"
-                                    value={selectedTable.StartTime}
-                                    onChange={handleFormChange}
-                                />
+                            <div className="form-group-container">
+                                <div className="form-group">
+                                    <label htmlFor="StartTime">Start Time:</label>
+                                    <input
+                                        id="StartTime"
+                                        type="time"
+                                        name="StartTime"
+                                        className="form-control"
+                                        value={selectedTable.StartTime}
+                                        onChange={handleFormChange}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="EndTime">End Time:</label>
+                                    <input
+                                        id="EndTime"
+                                        type="time"
+                                        name="EndTime"
+                                        className="form-control"
+                                        value={selectedTable.EndTime}
+                                        onChange={handleFormChange}
+                                        style={{ marginBottom: '1rem' }}
+                                    />
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="EndTime">End Time:</label>
-                                <input
-                                    id="EndTime"
-                                    type="time"
-                                    name="EndTime"
-                                    className="form-control"
-                                    value={selectedTable.EndTime}
-                                    onChange={handleFormChange}
-                                    style={{ marginBottom: '1rem' }}
-                                />
+                            <div>
+                                <button type="submit" disabled={isLoading}>
+                                    {isLoading ? <LoadingAnimation /> : 'Save Changes'}
+                                </button>
+
                             </div>
-                            <button type="submit" disabled={isLoading}>
-                                {isLoading ? <LoadingAnimation /> : 'Save Changes'}
-                            </button>
                             <button
                                 type="button"
                                 className='tables-modal-delete'
@@ -340,6 +373,13 @@ const Tables = () => {
                     message="Are you sure you want to delete this table?"
                     onConfirm={confirmDelete}
                     onCancel={() => setIsConfirmDelete(false)}
+                />
+            )}
+
+            {isTopicModalOpen && (
+                <TopicModal
+                    onConfirm={handleTopicConfirm}
+                    onCancel={handleTopicCancel}
                 />
             )}
         </div>

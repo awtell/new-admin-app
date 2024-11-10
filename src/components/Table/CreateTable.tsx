@@ -3,21 +3,27 @@ import './CreateTable.css';
 import LoadingAnimation from '../Loading/LoadingAnimation';
 import { TableService } from '../../services/TableService';
 import { useNavigate } from 'react-router-dom';
+import EventService from '../../services/EventService';
+import ConfirmationModal from '../ConfirmationModal/ConfiramtionModal';
+import TopicModal from './TopicModal';
 
 const CreateTable: React.FC = () => {
   const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
   const [tableData, setTableData] = useState({
     IdEvent: 1,
     TableName: '',
     Capacity: '',
     CostPerChair: '',
-    Availability: '',
+    Availability: true, // Changed to boolean
     StartTime: '',
     EndTime: '',
     Attachment: '',
   });
 
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -32,7 +38,6 @@ const CreateTable: React.FC = () => {
       tableData.TableName !== '' &&
       tableData.Capacity !== '' &&
       tableData.CostPerChair !== '' &&
-      tableData.Availability !== '' &&
       tableData.StartTime !== '' &&
       tableData.EndTime !== ''
     );
@@ -52,33 +57,71 @@ const CreateTable: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Create Table';
+
+    const fetchEvents = async () => {
+      try {
+        const eventResponse = await EventService.getEvents();
+        const eventData = eventResponse.data.My_Result;
+        setEvents(eventData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
   }, []);
 
   const handleCreateTable = async () => {
-    try {
-      setLoading(true);
+    setLoading(true);
 
+    try {
       const formData = new FormData();
       formData.append('IdEvent', tableData.IdEvent.toString());
       formData.append('TableName', tableData.TableName);
       formData.append('Capacity', tableData.Capacity);
       formData.append('CostPerChair', tableData.CostPerChair);
-      formData.append('Availability', tableData.Availability);
+      formData.append('Availability', tableData.Availability.toString());
       formData.append('StartTime', tableData.StartTime);
       formData.append('EndTime', tableData.EndTime);
+
       const attachmentInput = document.getElementById('Attachment') as HTMLInputElement;
       if (attachmentInput && attachmentInput.files && attachmentInput.files.length > 0) {
         formData.append('Attachment', attachmentInput.files[0]);
       }
 
-      const response = await TableService.insertTable(formData);
-      navigate('/tables');
+      await TableService.insertTable(formData);
+
+      setIsModalOpen(true); // Show confirmation dialog
     } catch (error) {
       console.error('Error creating table:', error);
+    } finally {
       setLoading(false);
     }
   };
 
+  const handleConfirm = () => {
+    setIsModalOpen(false);
+    setIsTopicModalOpen(true); // Show topic modal
+  };
+
+  const handleTopicConfirm = (description: string, time: string) => {
+    // Handle the topic description and time here
+    console.log('Topic Description:', description);
+    console.log('Topic Time:', time);
+    setIsTopicModalOpen(false);
+    navigate('/add-topic'); // Replace '/add-topic' with the actual route to add a topic
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    navigate('/tables');
+  };
+
+  const handleTopicCancel = () => {
+    setIsTopicModalOpen(false);
+    navigate('/tables');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -104,32 +147,52 @@ const CreateTable: React.FC = () => {
               </div>
 
               <div>
-                <label>Capacity</label>
-                <input
-                  id="Capacity"
-                  type="number"
-                  name="Capacity"
+                <label className="block text-base font-medium text-gray-700 mb-2">Event</label>
+                <select
+                  id="IdEvent"
+                  name="IdEvent"
                   className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
-                  value={tableData.Capacity}
+                  value={tableData.IdEvent}
                   onChange={handleInputChange}
-                  min={0}
                   required
-                  style={{ appearance: 'textfield' }}
-                />
+                >
+                  {events.map((event: any) => (
+                    <option key={event.IdEvent} value={event.IdEvent}>
+                      {event.EventName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div>
-                <label className="block text-base font-medium text-gray-700 mb-2">Cost per chair</label>
-                <input
-                  id="CostPerChair"
-                  type="number"
-                  name="CostPerChair"
-                  className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
-                  value={tableData.CostPerChair}
-                  onChange={handleInputChange}
-                  min={0}
-                  required
-                />
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <label className='block text-base font-medium text-gray-700 mb-2'>Capacity</label>
+                  <input
+                    id="Capacity"
+                    type="number"
+                    name="Capacity"
+                    className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
+                    value={tableData.Capacity}
+                    onChange={handleInputChange}
+                    min={0}
+                    required
+                    style={{ appearance: 'textfield' }}
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-base font-medium text-gray-700 mb-2">Cost per chair</label>
+                  <input
+                    id="CostPerChair"
+                    type="number"
+                    name="CostPerChair"
+                    className="w-full bg-gray-200 text-gray-900 rounded-xl p-4"
+                    value={tableData.CostPerChair}
+                    onChange={handleInputChange}
+                    min={0}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -139,14 +202,20 @@ const CreateTable: React.FC = () => {
                 <label className="block text-base font-medium text-gray-700 mb-2">Availability</label>
                 <div className="availability-container">
                   <button
-                    className={`chip ${tableData.Availability === 'available' ? 'chip-selected' : ''}`}
-                    onClick={() => setTableData({ ...tableData, Availability: 'available' })}
+                    className={`chip ${tableData.Availability ? 'chip-selected' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setTableData({ ...tableData, Availability: true });
+                    }}
                   >
                     Available
                   </button>
                   <button
-                    className={`chip ${tableData.Availability === 'unavailable' ? 'chip-selected' : ''}`}
-                    onClick={() => setTableData({ ...tableData, Availability: 'unavailable' })}
+                    className={`chip ${!tableData.Availability ? 'chip-selected' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setTableData({ ...tableData, Availability: false });
+                    }}
                   >
                     Unavailable
                   </button>
@@ -180,7 +249,6 @@ const CreateTable: React.FC = () => {
                       required
                     />
                   </div>
-
                 </div>
               </div>
               <div className="flex-1">
@@ -209,6 +277,21 @@ const CreateTable: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {isModalOpen && (
+        <ConfirmationModal
+          message="Table created successfully! Would you like to add a topic?"
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
+
+      {isTopicModalOpen && (
+        <TopicModal
+          onConfirm={handleTopicConfirm}
+          onCancel={handleTopicCancel}
+        />
+      )}
     </div>
   );
 };

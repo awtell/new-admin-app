@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "-": "^0.0.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
@@ -22,6 +23,7 @@
     "chart.js": "^4.4.3",
     "date-fns": "^3.6.0",
     "firebase": "^10.13.0",
+    "firebase-tools": "^13.24.2",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "react": "^18.3.1",

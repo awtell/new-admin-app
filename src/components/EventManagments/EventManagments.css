@@ -28,8 +28,6 @@
 .create-event-form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
 }
 
 .create-event-form input {
@@ -64,7 +62,7 @@
 .modal-content {
     position: relative;
     background-color: white;
-    padding: 20px;
+    padding: 20px 0 0 0;
     border-radius: 8px;
     max-width: 400px;
     width: 100%;

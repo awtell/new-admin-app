@@ -1,0 +1,97 @@
+.topic-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.topic-modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%; /* Adjusted for responsiveness */
+    max-width: 400px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.topic-modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.topic-modal-content div {
+    margin-bottom: 15px;
+}
+
+.topic-modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.topic-modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.topic-modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* Adding gap for better spacing on smaller screens */
+}
+
+.topic-modal-buttons button {
+    flex: 1; /* Make buttons equally wide on small screens */
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.topic-modal-buttons button:first-child {
+    background-color: #007bff;
+    color: white;
+}
+
+.topic-modal-buttons button:last-child {
+    background-color: #dc3545;
+    color: white;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: black;
+}
+
+/* Media query for mobile */
+@media (max-width: 480px) {
+    .topic-modal-content {
+        padding: 15px; /* Adjust padding for smaller screens */
+        font-size: 14px; /* Smaller font size */
+    }
+
+    .topic-modal-content h2 {
+        font-size: 20px; /* Smaller heading font */
+    }
+    
+    .topic-modal-buttons button {
+        padding: 8px; /* Smaller padding on buttons */
+    }
+}
