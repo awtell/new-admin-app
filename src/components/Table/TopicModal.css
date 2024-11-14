@@ -9,16 +9,21 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+
 }
 
 .topic-modal-content {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
-    width: 90%; /* Adjusted for responsiveness */
+    width: 90%;
     max-width: 400px;
+    max-height: 80%;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: relative;
+    overflow-y: auto;
 }
 
 .topic-modal-content h2 {
@@ -48,17 +53,16 @@
 .topic-modal-buttons {
     display: flex;
     justify-content: space-between;
-    gap: 10px; /* Adding gap for better spacing on smaller screens */
+    gap: 10px;
 }
 
 .topic-modal-buttons button {
-    flex: 1; /* Make buttons equally wide on small screens */
+    flex: 1;
     padding: 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
-
 .topic-modal-buttons button:first-child {
     background-color: #007bff;
     color: white;
@@ -67,6 +71,10 @@
 .topic-modal-buttons button:last-child {
     background-color: #dc3545;
     color: white;
+}
+
+.topic-modal-buttons button:hover {
+    opacity: 0.5;
 }
 
 .close-button {
@@ -83,15 +91,15 @@
 /* Media query for mobile */
 @media (max-width: 480px) {
     .topic-modal-content {
-        padding: 15px; /* Adjust padding for smaller screens */
-        font-size: 14px; /* Smaller font size */
+        padding: 15px;
+        font-size: 14px;
     }
 
     .topic-modal-content h2 {
-        font-size: 20px; /* Smaller heading font */
+        font-size: 20px;
     }
-    
+
     .topic-modal-buttons button {
-        padding: 8px; /* Smaller padding on buttons */
+        padding: 8px;
     }
 }

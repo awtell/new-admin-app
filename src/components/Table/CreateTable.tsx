@@ -15,9 +15,9 @@ const CreateTable: React.FC = () => {
     TableName: '',
     Capacity: '',
     CostPerChair: '',
-    Availability: true, // Changed to boolean
-    StartTime: '',
-    EndTime: '',
+    Availability: true,
+    // StartTime: '',
+    // EndTime: '',
     Attachment: '',
   });
 
@@ -37,9 +37,9 @@ const CreateTable: React.FC = () => {
     return (
       tableData.TableName !== '' &&
       tableData.Capacity !== '' &&
-      tableData.CostPerChair !== '' &&
-      tableData.StartTime !== '' &&
-      tableData.EndTime !== ''
+      tableData.CostPerChair !== '' 
+      // tableData.StartTime !== '' &&
+      // tableData.EndTime !== ''
     );
   };
 
@@ -82,8 +82,8 @@ const CreateTable: React.FC = () => {
       formData.append('Capacity', tableData.Capacity);
       formData.append('CostPerChair', tableData.CostPerChair);
       formData.append('Availability', tableData.Availability.toString());
-      formData.append('StartTime', tableData.StartTime);
-      formData.append('EndTime', tableData.EndTime);
+      // formData.append('StartTime', tableData.StartTime);
+      // formData.append('EndTime', tableData.EndTime);
 
       const attachmentInput = document.getElementById('Attachment') as HTMLInputElement;
       if (attachmentInput && attachmentInput.files && attachmentInput.files.length > 0) {
@@ -222,7 +222,7 @@ const CreateTable: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-4">
+              {/* <div className="flex space-x-4">
                 <div className="time-container">
                   <div className="flex-1">
                     <label className="block text-base font-medium text-gray-700 mb-2">Time starting</label>
@@ -250,7 +250,7 @@ const CreateTable: React.FC = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="flex-1">
                 <label className="block text-base font-medium text-gray-700 mb-2">Attachment</label>
                 <input

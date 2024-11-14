@@ -61,7 +61,6 @@
 .dropdown {
     position: absolute;
     top: 50px;
-    /* Adjust to position below the avatar */
     right: 0;
     background-color: white;
     border-radius: 8px;

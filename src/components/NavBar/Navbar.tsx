@@ -7,7 +7,7 @@ import logo from '../../assets/images/log.png';
 interface NavbarProps {
     username: string;
     toggleSidebar: () => void;
-    onLogout: () => void; // Added onLogout prop
+    onLogout: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ username, toggleSidebar, onLogout }) => {

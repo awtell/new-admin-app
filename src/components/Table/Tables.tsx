@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Tables.css';
 import { TableService } from '../../services/TableService';
+import { TableTopicService } from '../../services/TableTopicService';
 import LoadingAnimation from '../Loading/LoadingAnimation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import ConfirmationModal from '../ConfirmationModal/ConfiramtionModal';
 import TopicModal from './TopicModal';
+import ViewTopics from './ViewTopics';
 
 const Tables = () => {
     const navigate = useNavigate();
@@ -24,6 +26,16 @@ const Tables = () => {
         SaveName: string;
     }
 
+    interface Topic {
+        IdTableTopic: number;
+        title: string;
+        Description: string;
+        StartTime: string;
+        EndTime: string;
+        Availabilities: number;
+        Topic: string;
+    }
+
     const [tables, setTables] = useState<Table[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +44,8 @@ const Tables = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isConfirmDelete, setIsConfirmDelete] = useState(false);
     const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
+    const [isViewTopicsModalOpen, setIsViewTopicsModalOpen] = useState(false);
+    const [topics, setTopics] = useState<Topic[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
 
@@ -40,7 +54,7 @@ const Tables = () => {
     };
 
     const handleCardClick = (table: any) => {
-        // Handle card click
+        console.log('Table clicked:', table);
     };
 
     const handleEditClick = (table: Table) => {
@@ -150,6 +164,24 @@ const Tables = () => {
         setIsTopicModalOpen(true);
     };
 
+    const handleViewTopicsClick = async (IdEventTable: number) => {
+        try {
+            const response = await TableTopicService.getTableTopics(IdEventTable);
+            const topicsData = response.data.My_Result.map((topic: any) => ({
+                availabilities: topic.Availabilities,
+                description: topic.Description,
+                Topic: topic.Topic,
+                StartTime: topic.StartTime,
+                EndTime: topic.EndTime,
+            }));
+            setTopics(topicsData);
+            console.log(topicsData)
+            setIsViewTopicsModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching table topics:', error);
+        }
+    };
+
     const handleTopicConfirm = (description: string, startTime: string, endTime: string) => {
         // Handle the topic description and time here
         console.log('Topic Description:', description);
@@ -221,10 +253,10 @@ const Tables = () => {
                                     className='tables-modal-add-topic'
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        handleAddTopicClick();
+                                        handleViewTopicsClick(table.IdEventTable);
                                     }}
                                 >
-                                    View Topic
+                                    View Topics
                                 </a>
                                 <FontAwesomeIcon
                                     icon={faEdit}
@@ -366,6 +398,13 @@ const Tables = () => {
                         </form>
                     </div>
                 </Modal>
+            )}
+
+            {isViewTopicsModalOpen && (
+                <ViewTopics
+                    topics={topics}
+                    onClose={() => setIsViewTopicsModalOpen(false)}
+                />
             )}
 
             {isConfirmDelete && (
