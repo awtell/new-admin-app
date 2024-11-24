@@ -4,7 +4,10 @@
     padding: 20px;
     box-sizing: border-box;
 }
-
+.tables-selections{
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
 .tables-header {
     display: flex;
     justify-content: space-between;

@@ -1,7 +1,7 @@
 import instance from "../axios";
 
 const getTables = () => {
-    return instance.get(`/Admin/Tables/GetEventTables?IdEvent=1&Offset=0`)
+    return instance.get(`/Admin/Tables/GetEventTables?Offset=0`)
 }
 
 const insertTable = (table: any) => {

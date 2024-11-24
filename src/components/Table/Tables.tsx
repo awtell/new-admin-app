@@ -10,10 +10,10 @@ import Modal from 'react-modal';
 import ConfirmationModal from '../ConfirmationModal/ConfiramtionModal';
 import TopicModal from './TopicModal';
 import ViewTopics from './ViewTopics';
+import EventService from '../../services/EventService';
 
 const Tables = () => {
     const navigate = useNavigate();
-
     interface Table {
         IdEventTable: number;
         TableName: string;
@@ -24,8 +24,9 @@ const Tables = () => {
         EndTime: string;
         Attachment: any;
         SaveName: string;
+        IdEvent: number;
+        EventName?: string;
     }
-
     interface Topic {
         IdTableTopic: number;
         title: string;
@@ -35,9 +36,15 @@ const Tables = () => {
         Availabilities: number;
         Topic: string;
     }
+    interface Event {
+        IdEvent: number;
+        EventName: string;
+    }
 
     const [tables, setTables] = useState<Table[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [events, setEvents] = useState<Event[]>([]);
+    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +58,14 @@ const Tables = () => {
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
+    };
+
+    const handleEventChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        if (e.target.value === "0") {
+            setSelectedEventId(null); // Reset filter
+        } else {
+            setSelectedEventId(Number(e.target.value));
+        }
     };
 
     const handleCardClick = (table: any) => {
@@ -96,7 +111,7 @@ const Tables = () => {
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true); // Start loading
+        setIsLoading(true);
 
         try {
             const response = await TableService.updateTable(selectedTable);
@@ -121,7 +136,7 @@ const Tables = () => {
         } finally {
             setIsLoading(false);
             setIsModalOpen(false);
-            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
+            setTimeout(() => { setMessage(null); setMessageType(null); }, 3000);
         }
     };
 
@@ -155,7 +170,7 @@ const Tables = () => {
                 setIsDeleting(false);
                 setIsConfirmDelete(false);
                 setIsModalOpen(false);
-                setTimeout(() => { setMessage(null); setMessageType(null); }, 3000); // Clear message after 3 seconds
+                setTimeout(() => { setMessage(null); setMessageType(null); }, 3000);
             }
         }
     };
@@ -183,7 +198,6 @@ const Tables = () => {
     };
 
     const handleTopicConfirm = (description: string, startTime: string, endTime: string) => {
-        // Handle the topic description and time here
         console.log('Topic Description:', description);
         console.log('Topic Start Time:', startTime);
         console.log('Topic End Time:', endTime);
@@ -194,29 +208,44 @@ const Tables = () => {
         setIsTopicModalOpen(false);
     };
 
+
     useEffect(() => {
         document.title = 'Tables';
         const fetchTables = async () => {
             try {
                 const response = await TableService.getTables();
                 const data = await response.data.My_Result;
-                const formattedData = data.map((table: any) => ({
-                    ...table,
-                    StartTime: table.StartTime,
-                    EndTime: table.EndTime,
+                const formattedData = await Promise.all(data.map(async (table: any) => {
+                    const eventResponse = await EventService.getEventNameById(table.IdEvent);
+                    const eventName = eventResponse.data.My_Result.Event.EventName;
+                    console.log(eventName)
+                    return {
+                        ...table,
+                        EventName: eventName,
+                    };
                 }));
-
                 setTables(formattedData);
             } catch (error) {
                 console.error('Error fetching tables:', error);
             }
         };
         fetchTables();
+
+        const fetchEvents = async () => {
+            try {
+                const response = await EventService.getEvents();
+                setEvents(response.data.My_Result);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        };
+        fetchEvents();
     }, []);
 
     const filteredTables = tables.filter(table =>
-        table.TableName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        table.Availability.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        (table.TableName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            table.Availability.toString().toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (selectedEventId === null || table.IdEvent === selectedEventId)
     );
 
     return (
@@ -233,55 +262,68 @@ const Tables = () => {
                     value={searchTerm}
                     onChange={handleSearchChange}
                 />
-            </div>
 
+            </div>
+            <div style={{ display: 'flex', marginBottom: '15px', left: '10px', position: 'relative' }}>
+                <select className='tables-selections' value={selectedEventId || ''} onChange={handleEventChange}>
+                    <option value="0">Filter by event</option>
+                    {events
+                        .filter(event => tables.some(table => table.IdEvent === event.IdEvent))
+                        .map(event => (
+                            <option key={event.IdEvent} value={event.IdEvent}>
+                                {event.EventName}
+                            </option>
+                        ))}
+                </select>
+            </div>
             {message &&
                 <div className={`message-bar ${messageType}`}>
                     {message}
                     <button className="close-btn" onClick={() => { setMessage(null); setMessageType(null); }}>×</button>
                 </div>
             }
-            <div className="table-grid">
-                {isLoading ? (
-                    <LoadingAnimation />
-                ) : (
-                    filteredTables.length > 0 ? (
-                        filteredTables.map(table => (
-                            <div key={table.IdEventTable} className="table-card" onClick={() => handleCardClick(table)}>
-                                <a
-                                    href="#"
-                                    className='tables-modal-add-topic'
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewTopicsClick(table.IdEventTable);
-                                    }}
-                                >
-                                    View Topics
-                                </a>
-                                <FontAwesomeIcon
-                                    icon={faEdit}
-                                    className="edit-icon"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditClick(table);
-                                    }}
-                                />
-                                <div className="card-header">
-                                    <h3>{table.TableName}</h3>
-                                </div>
-                                <p>Capacity: {table.Capacity}</p>
-                                <p>Cost per chair: ${table.CostPerChair}</p>
-                                <p> {table.Availability ? 'Available' : 'Unavailable'}</p>
-                                <p>Start Time: {table.StartTime}</p>
-                                <p>End Time: {table.EndTime}</p>
-                            </div>
-                        ))
-                    ) : (
-                        <LoadingAnimation />
-                    )
-                )}
-            </div>
+            <div>
 
+                <div className="table-grid">
+                    {isLoading ? (
+                        <LoadingAnimation />
+                    ) : (
+                        filteredTables.length > 0 ? (
+                            filteredTables.map(table => (
+                                <div key={table.IdEventTable} className="table-card" onClick={() => handleCardClick(table)}>
+                                    <a
+                                        href="#"
+                                        className='tables-modal-add-topic'
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleViewTopicsClick(table.IdEventTable);
+                                        }}
+                                    >
+                                        View Topics
+                                    </a>
+                                    <FontAwesomeIcon
+                                        icon={faEdit}
+                                        className="edit-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditClick(table);
+                                        }}
+                                    />
+                                    <div className="card-header">
+                                        <h3>{table.TableName}</h3>
+                                    </div>
+                                    <p>Event: {table.EventName}</p>
+                                    <p>Capacity: {table.Capacity}</p>
+                                    <p>Cost per chair: ${table.CostPerChair}</p>
+                                    <p> {table.Availability ? 'Available' : 'Unavailable'}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <LoadingAnimation />
+                        )
+                    )}
+                </div>
+            </div>
             {isModalOpen && selectedTable && (
                 <Modal
                     isOpen={isModalOpen}

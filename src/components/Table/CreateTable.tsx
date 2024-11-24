@@ -37,7 +37,7 @@ const CreateTable: React.FC = () => {
     return (
       tableData.TableName !== '' &&
       tableData.Capacity !== '' &&
-      tableData.CostPerChair !== '' 
+      tableData.CostPerChair !== ''
       // tableData.StartTime !== '' &&
       // tableData.EndTime !== ''
     );
@@ -90,9 +90,18 @@ const CreateTable: React.FC = () => {
         formData.append('Attachment', attachmentInput.files[0]);
       }
 
-      await TableService.insertTable(formData);
+      try {
+        const response = await TableService.insertTable(formData);
+        if (response.status === 200) {
+          console.log('Table created successfully:', response.data);
+          setIsModalOpen(true);
 
-      setIsModalOpen(true); // Show confirmation dialog
+        }
+      }
+      catch (error) {
+        console.log('Error creating table:', error);
+      }
+
     } catch (error) {
       console.error('Error creating table:', error);
     } finally {
